@@ -1,32 +1,31 @@
 use serde::{Deserialize, Serialize};
-use crate::{Bytes, consts, String};
+use crate::{Bytes, String};
 use crate::sizes::*;
 
 #[derive(Clone,Debug, Eq,PartialEq,Serialize,Deserialize)]
 pub struct PublicKeyCredentialRpEntity {
-    pub id: String<consts::U256>,
+    pub id: String<256>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub name: Option<String<consts::U64>>,
+    pub name: Option<String<64>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub url: Option<String<consts::U64>>,
+    pub url: Option<String<64>>,
 }
 
 #[derive(Clone,Debug, Eq,PartialEq,Serialize,Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PublicKeyCredentialUserEntity {
-    pub id: Bytes<consts::U64>,
+    pub id: Bytes<64>,
     #[serde(default, deserialize_with = "deserialize_from_str_and_skip_if_too_long")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub icon: Option<String<consts::U128>>,
+    pub icon: Option<String<128>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub name: Option<String<consts::U64>>,
+    pub name: Option<String<64>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub display_name: Option<String<consts::U64>>,
+    pub display_name: Option<String<64>>,
 }
 
-fn deserialize_from_str_and_skip_if_too_long<'de, L, D>(deserializer: D) -> Result<Option<String<L>>, D::Error>
+fn deserialize_from_str_and_skip_if_too_long<'de, D, const L: usize>(deserializer: D) -> Result<Option<String<L>>, D::Error>
 where
-    L: heapless_bytes::Unsigned + heapless_bytes::ArrayLength<u8>,
     D: serde::Deserializer<'de>,
 {
     let result: Result<String<L>, D::Error> = serde::Deserialize::deserialize(deserializer);
@@ -43,7 +42,7 @@ where
 
 
 impl PublicKeyCredentialUserEntity {
-    pub fn from(id: Bytes<consts::U64>) -> Self {
+    pub fn from(id: Bytes<64>) -> Self {
         Self { id, icon: None, name: None, display_name: None }
     }
 }
@@ -52,7 +51,7 @@ impl PublicKeyCredentialUserEntity {
 pub struct PublicKeyCredentialParameters {
     pub alg: i32,
     #[serde(rename = "type")]
-    pub key_type: String<consts::U32>,
+    pub key_type: String<32>,
 }
 
 #[derive(Clone,Debug, Eq,PartialEq,Serialize,Deserialize)]
@@ -62,7 +61,7 @@ pub struct PublicKeyCredentialDescriptor {
     // See serde::error/custom for more info
     pub id: Bytes<MAX_CREDENTIAL_ID_LENGTH>,
     #[serde(rename = "type")]
-    pub key_type: String<consts::U32>,
+    pub key_type: String<32>,
     // https://w3c.github.io/webauthn/#enumdef-authenticatortransport
     // transports: ...
 }

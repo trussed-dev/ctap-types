@@ -1,4 +1,4 @@
-use crate::{Bytes, consts, String, Vec};
+use crate::{Bytes, String, Vec};
 use serde::{Deserialize, Serialize};
 use serde_indexed::{DeserializeIndexed, SerializeIndexed};
 
@@ -19,8 +19,8 @@ use crate::webauthn::*;
 pub struct HmacSecretInput {
     pub key_agreement: EcdhEsHkdf256PublicKey,
     // *either* enc(salt1) *or* enc(salt1 || salt2)
-    pub salt_enc: Bytes<consts::U64>,
-    pub salt_auth: Bytes<consts::U16>,
+    pub salt_enc: Bytes<64>,
+    pub salt_auth: Bytes<16>,
 
 }
 
@@ -36,7 +36,7 @@ pub struct ExtensionsOutput {
     #[serde(rename = "hmac-secret")]
     #[serde(skip_serializing_if = "Option::is_none")]
     // *either* enc(output1) *or* enc(output1 || output2)
-    pub hmac_secret: Option<Bytes<consts::U64>>,
+    pub hmac_secret: Option<Bytes<64>>,
 }
 
 pub struct NoAttestedCredentialData (core::marker::PhantomData<()>);
@@ -55,8 +55,8 @@ pub type AllowList = Vec<PublicKeyCredentialDescriptor, MAX_CREDENTIAL_COUNT_IN_
 // #[serde(rename_all = "camelCase")]
 #[serde_indexed(offset = 1)]
 pub struct Parameters {
-    pub rp_id: String<consts::U64>,
-    pub client_data_hash: Bytes<consts::U32>,
+    pub rp_id: String<64>,
+    pub client_data_hash: Bytes<32>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub allow_list: Option<AllowList>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -85,4 +85,4 @@ pub struct Response {
     pub number_of_credentials: Option<u32>,
 }
 
-pub type Responses = Vec<Response, consts::U8>;
+pub type Responses = Vec<Response, 8>;

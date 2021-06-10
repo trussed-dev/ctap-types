@@ -1,4 +1,4 @@
-use crate::{Bytes, consts, String, Vec};
+use crate::{Bytes, String, Vec};
 use serde::{Deserialize, Serialize};
 use serde_indexed::{DeserializeIndexed, SerializeIndexed};
 
@@ -9,18 +9,18 @@ pub type AuthenticatorInfo = Response;
 pub struct Response {
 
     // 0x01
-    pub versions: Vec<String<consts::U12>, consts::U3>,
+    pub versions: Vec<String<12>, 3>,
 
     // 0x02
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extensions: Option<Vec<String<consts::U11>, consts::U4>>,
+    pub extensions: Option<Vec<String<11>, 4>>,
 
     // 0x03
     // #[serde(with = "serde_bytes")]
     // #[serde(serialize_with = "serde_bytes::serialize", deserialize_with = "serde_bytes::deserialize")]
     // #[serde(serialize_with = "serde_bytes::serialize")]
-    // pub(crate) aaguid: Vec<u8, consts::U16>,
-    pub aaguid: Bytes<consts::U16>,
+    // pub(crate) aaguid: Vec<u8, 16>,
+    pub aaguid: Bytes<16>,
 
     // 0x04
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -33,7 +33,7 @@ pub struct Response {
 
     // 0x06
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub pin_protocols: Option<Vec<u8, consts::U1>>,
+    pub pin_protocols: Option<Vec<u8, 1>>,
 
     // 0x07
     // FIDO_2_1
@@ -48,7 +48,7 @@ pub struct Response {
     // 0x09
     // FIDO_2_1
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub transports: Option<Vec<Bytes<consts::U8>, consts::U4>>,
+    pub transports: Option<Vec<Bytes<8>, 4>>,
 
     // #[serde(skip_serializing_if = "Option::is_none")]
     // pub(crate) algorithms: Option<&'l[u8]>,
@@ -56,9 +56,9 @@ pub struct Response {
 
 impl Default for Response {
     fn default() -> Self {
-        let mut zero_aaguid = Vec::<u8, consts::U16>::new();
+        let mut zero_aaguid = Vec::<u8, 16>::new();
         zero_aaguid.resize_default(16).unwrap();
-        let aaguid = Bytes::<consts::U16>::from(zero_aaguid);
+        let aaguid = Bytes::<16>::from(zero_aaguid);
 
         Self {
             versions: Vec::new(),

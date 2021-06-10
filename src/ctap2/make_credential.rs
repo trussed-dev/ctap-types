@@ -1,4 +1,4 @@
-use crate::{Bytes, consts, String, Vec};
+use crate::{Bytes, String, Vec};
 
 use serde::{Deserialize, Serialize};
 use serde_indexed::{DeserializeIndexed, SerializeIndexed};
@@ -9,12 +9,12 @@ use crate::webauthn::*;
 use crate::ctap2::credential_management::CredentialProtectionPolicy;
 
 // // Approach 1:
-// pub type AuthenticatorExtensions = heapless::LinearMap<String<consts::U11>, bool, consts::U2>;
+// pub type AuthenticatorExtensions = heapless::LinearMap<String<11>, bool, 2>;
 
-// impl core::convert::TryFrom<&String<consts::U44>> for CredentialProtectionPolicy {
+// impl core::convert::TryFrom<&String<44>> for CredentialProtectionPolicy {
 //     type Error = crate::authenticator::Error;
 
-//     fn try_from(value: &String<consts::U44>) -> Result<Self, Self::Error> {
+//     fn try_from(value: &String<44>) -> Result<Self, Self::Error> {
 //         Ok(match value.as_str() {
 //             "userVerificationOptional" => CredentialProtectionPolicy::Optional,
 //             "userVerificationOptionalWithCredentialIDList" => CredentialProtectionPolicy::OptionalWithCredentialIdList,
@@ -65,20 +65,20 @@ pub struct Extensions {
 // #[derive(Clone,Debug,Eq,PartialEq,Serialize,Deserialize)]
 // pub struct AuthenticatorExtensions {
 //     #[serde(flatten)]
-//     pub extensions: Vec<AuthenticatorExtension, consts::U3>,
+//     pub extensions: Vec<AuthenticatorExtension, 3>,
 // }
 
 #[derive(Clone,Debug, Eq,PartialEq,SerializeIndexed,DeserializeIndexed)]
 // #[serde(rename_all = "camelCase")]
 #[serde_indexed(offset = 1)]
 pub struct Parameters {
-    pub client_data_hash: Bytes<consts::U32>,
+    pub client_data_hash: Bytes<32>,
     pub rp: PublicKeyCredentialRpEntity,
     pub user: PublicKeyCredentialUserEntity,
     // e.g. webauthn.io sends 10
-    pub pub_key_cred_params: Vec<PublicKeyCredentialParameters, consts::U12>,
+    pub pub_key_cred_params: Vec<PublicKeyCredentialParameters, 12>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub exclude_list: Option<Vec<PublicKeyCredentialDescriptor, consts::U16>>,
+    pub exclude_list: Option<Vec<PublicKeyCredentialDescriptor, 16>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub extensions: Option<Extensions>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -108,7 +108,7 @@ pub type AuthenticatorData = super::AuthenticatorData<AttestedCredentialData, Ex
 // #[derive(Clone,Debug,Eq,PartialEq)]
 // // #[serde(rename_all = "camelCase")]
 // pub struct AuthenticatorData {
-//     pub rp_id_hash: Bytes<consts::U32>,
+//     pub rp_id_hash: Bytes<32>,
 //     pub flags: Flags,
 //     pub sign_count: u32,
 //     // this can get pretty long
@@ -153,7 +153,7 @@ pub type AuthenticatorData = super::AuthenticatorData<AttestedCredentialData, Ex
 // https://www.w3.org/TR/webauthn/#sec-attested-credential-data
 #[derive(Clone,Debug,Eq,PartialEq)]
 pub struct AttestedCredentialData {
-	pub aaguid: Bytes<consts::U16>,
+	pub aaguid: Bytes<16>,
     // this is where "unlimited non-resident keys" get stored
     // TODO: Model as actual credential ID, with ser/de to bytes (format is up to authenticator)
     pub credential_id: Bytes<MAX_CREDENTIAL_ID_LENGTH>,
@@ -187,9 +187,9 @@ impl super::SerializeAttestedCredentialData for AttestedCredentialData {
 #[derive(Clone,Debug, Eq,PartialEq,SerializeIndexed)]
 #[serde_indexed(offset = 1)]
 pub struct Response {
-    pub fmt: String<consts::U32>,
+    pub fmt: String<32>,
     pub auth_data: super::SerializedAuthenticatorData,
-    // pub att_stmt: Bytes<consts::U64>,
+    // pub att_stmt: Bytes<64>,
     pub att_stmt: AttestationStatement,
 }
 
@@ -219,5 +219,5 @@ pub struct PackedAttestationStatement {
     pub alg: i32,
     pub sig: Bytes<ASN1_SIGNATURE_LENGTH>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub x5c: Option<Vec<Bytes<consts::U1024>, consts::U1>>,
+    pub x5c: Option<Vec<Bytes<1024>, 1>>,
 }

@@ -3,7 +3,7 @@ use iso7816::{
     Instruction,
 };
 
-use crate::{Bytes, consts};
+use crate::Bytes;
 
 pub const NO_ERROR: u16 = 0x9000;
 
@@ -39,32 +39,32 @@ pub type Result<T> = core::result::Result<T, Error>;
 
 #[derive(Clone,Debug, Eq,PartialEq)]
 pub struct Register {
-    pub challenge: Bytes<consts::U32>,
-    pub app_id: Bytes<consts::U32>,
+    pub challenge: Bytes<32>,
+    pub app_id: Bytes<32>,
 }
 
 #[derive(Clone,Debug, Eq,PartialEq)]
 pub struct RegisterResponse {
     pub header_byte: u8,
-    pub public_key: Bytes<consts::U65>,
-    pub key_handle: Bytes<consts::U255>,
-    pub attestation_certificate: Bytes<consts::U1024>,
-    pub signature: Bytes<consts::U72>,
+    pub public_key: Bytes<65>,
+    pub key_handle: Bytes<255>,
+    pub attestation_certificate: Bytes<1024>,
+    pub signature: Bytes<72>,
 }
 
 #[derive(Clone,Debug, Eq,PartialEq)]
 pub struct Authenticate {
     pub control_byte: ControlByte,
-    pub challenge: Bytes<consts::U32>,
-    pub app_id: Bytes<consts::U32>,
-    pub key_handle: Bytes<consts::U255>,
+    pub challenge: Bytes<32>,
+    pub app_id: Bytes<32>,
+    pub key_handle: Bytes<255>,
 }
 
 #[derive(Clone,Debug, Eq,PartialEq)]
 pub struct AuthenticateResponse {
     user_presence: u8,
     count: u32,
-    signature: Bytes<consts::U72>,
+    signature: Bytes<72>,
 }
 
 #[derive(Clone,Debug, Eq,PartialEq)]
@@ -86,7 +86,7 @@ impl RegisterResponse {
         header_byte: u8,
         public_key: &crate::cose::EcdhEsHkdf256PublicKey,
         key_handle: &[u8],
-        signature: Bytes<consts::U72>,
+        signature: Bytes<72>,
         attestation_certificate: &[u8],
     ) -> Self {
 
@@ -120,7 +120,7 @@ impl AuthenticateResponse {
     pub fn new(
         user_presence: u8,
         count: u32,
-        signature: Bytes<consts::U72>,
+        signature: Bytes<72>,
     ) -> Self {
         Self {
             user_presence: user_presence,
@@ -131,8 +131,8 @@ impl AuthenticateResponse {
 }
 
 impl Response {
-    pub fn serialize<SIZE>(&self, buf: &mut iso7816::response::Data<SIZE>) -> core::result::Result<(),()>
-    where SIZE: heapless_bytes::ArrayLength<u8> {
+    pub fn serialize<const S: usize>(&self, buf: &mut iso7816::Data<S>) -> core::result::Result<(),()>
+    {
         match self {
             Response::Register(reg) => {
                 buf.push(reg.header_byte).ok();
@@ -153,10 +153,9 @@ impl Response {
         }
     }
 }
-impl<SIZE> core::convert::TryFrom<&ApduCommand<SIZE>> for Command
-where SIZE: heapless_bytes::ArrayLength<u8> {
+impl<const S: usize> core::convert::TryFrom<&ApduCommand<S>> for Command {
     type Error = Error;
-    fn try_from(apdu: &ApduCommand<SIZE>) -> Result<Command> {
+    fn try_from(apdu: &ApduCommand<S>) -> Result<Command> {
         let cla = apdu.class().into_inner();
         let ins = match apdu.instruction() {
             Instruction::Unknown(ins) => ins,
@@ -184,8 +183,8 @@ where SIZE: heapless_bytes::ArrayLength<u8> {
                     return Err(Error::IncorrectDataParameter);
                 }
                 Ok(Command::Register(Register {
-                    challenge: Bytes::try_from_slice(&request[..32]).unwrap(),
-                    app_id: Bytes::try_from_slice(&request[32..]).unwrap(),
+                    challenge: Bytes::from_slice(&request[..32]).unwrap(),
+                    app_id: Bytes::from_slice(&request[32..]).unwrap(),
                 }))
             },
 
@@ -201,9 +200,9 @@ where SIZE: heapless_bytes::ArrayLength<u8> {
                 }
                 Ok(Command::Authenticate(Authenticate {
                     control_byte,
-                    challenge: Bytes::try_from_slice(&request[..32]).unwrap(),
-                    app_id: Bytes::try_from_slice(&request[32..64]).unwrap(),
-                    key_handle: Bytes::try_from_slice(&request[65..]).unwrap(),
+                    challenge: Bytes::from_slice(&request[..32]).unwrap(),
+                    app_id: Bytes::from_slice(&request[32..64]).unwrap(),
+                    key_handle: Bytes::from_slice(&request[65..]).unwrap(),
                 }))
             },
 

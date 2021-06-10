@@ -8,11 +8,11 @@ edition = "2018"
 
 [dependencies]
 bitflags = "1.2.1"
-cbor-smol = "0.3.1"
-cosey = "0.2.0"
+cbor-smol = "0.4"
+cosey = "0.3.0"
 delog = "0.1.0"
-heapless = { version = "0.6", default-features = false, features = ["serde"] }
-heapless-bytes = "0.2.0"
+heapless = { version = "0.7", default-features = false, features = ["serde"] }
+heapless-bytes = "0.3.0"
 interchange = "0.2.0"
 iso7816 = { git = "https://github.com/ycrypto/iso7816", branch = "main" }
 serde = { version = "1.0", default-features = false, features = ["derive"] }
