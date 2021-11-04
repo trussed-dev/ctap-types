@@ -21,7 +21,8 @@ pub struct HmacSecretInput {
     // *either* enc(salt1) *or* enc(salt1 || salt2)
     pub salt_enc: Bytes<64>,
     pub salt_auth: Bytes<16>,
-
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pin_protocol: Option<u32>
 }
 
 #[derive(Clone,Debug, Eq,PartialEq,Serialize,Deserialize)]
