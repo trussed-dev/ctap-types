@@ -11,24 +11,34 @@ pub enum Operation {
     Reset,
     // new in v2.1
     BioEnrollment,
-    // new in v2.1
     CredentialManagement,
+    Selection,
+    LargeBlobs,
+    Config,
+    PreviewBioEnrollment,
+    PreviewCredentialManagement,
     /// vendors are assigned the range 0x40..=0x7f for custom operations
     Vendor(VendorOperation),
 }
 
 impl Into<u8> for Operation {
     fn into(self) -> u8 {
+        use Operation::*;
         match self {
-            Operation::MakeCredential => 0x01,
-            Operation::GetAssertion => 0x02,
-            Operation::GetNextAssertion => 0x08,
-            Operation::GetInfo => 0x04,
-            Operation::ClientPin => 0x06,
-            Operation::Reset => 0x07,
-            Operation::BioEnrollment => 0x09,
-            Operation::CredentialManagement => 0x0A,
-            Operation::Vendor(operation) => operation.into(),
+            MakeCredential => 0x01,
+            GetAssertion => 0x02,
+            GetNextAssertion => 0x08,
+            GetInfo => 0x04,
+            ClientPin => 0x06,
+            Reset => 0x07,
+            BioEnrollment => 0x09,
+            CredentialManagement => 0x0A,
+            Selection => 0x0B,
+            LargeBlobs => 0x0C,
+            Config => 0x0D,
+            PreviewBioEnrollment => 0x40,
+            PreviewCredentialManagement => 0x41,
+            Vendor(operation) => operation.into(),
         }
     }
 }
@@ -70,19 +80,25 @@ impl TryFrom<u8> for Operation {
     type Error = ();
 
     fn try_from(from: u8) -> core::result::Result<Operation, ()> {
-        match from {
-            0x01 => Ok(Operation::MakeCredential),
-            0x02 => Ok(Operation::GetAssertion),
-            0x08 => Ok(Operation::GetNextAssertion),
-            0x04 => Ok(Operation::GetInfo),
-            0x06 => Ok(Operation::ClientPin),
-            0x07 => Ok(Operation::Reset),
-            0x09 => Ok(Operation::BioEnrollment),
-            0x0A => Ok(Operation::CredentialManagement),
+        use Operation::*;
+        Ok(match from {
+            0x01 => MakeCredential,
+            0x02 => GetAssertion,
+            0x08 => GetNextAssertion,
+            0x04 => GetInfo,
+            0x06 => ClientPin,
+            0x07 => Reset,
+            0x09 => BioEnrollment,
+            0x0A => CredentialManagement,
+            0x0B => Selection,
+            0x0C => LargeBlobs,
+            0x0D => Config,
+            0x40 => PreviewBioEnrollment,
+            0x41 => PreviewCredentialManagement,
             code @ VendorOperation::FIRST..=VendorOperation::LAST
-                 => Ok(Operation::Vendor(VendorOperation::try_from(code)?)),
-            _ => Err(()),
-        }
+                 => Vendor(VendorOperation::try_from(code)?),
+            _ => return Err(()),
+        })
     }
 }
 

@@ -12,6 +12,9 @@ pub enum PinV1Subcommand {
     SetPin = 0x03,
     ChangePin = 0x04,
     GetPinToken = 0x05,
+    GetPinUvAuthTokenUsingUvWithPermissions = 0x06,
+    GetUVRetries = 0x07,
+    GetPinUvAuthTokenUsingPinWithPermissions = 0x09,
 }
 
 // minimum PIN length: 4 unicode
