@@ -1,6 +1,7 @@
 use crate::{Bytes, String, Vec};
 use serde::{Deserialize, Serialize};
 use serde_indexed::{DeserializeIndexed, SerializeIndexed};
+use crate::webauthn::PublicKeyCredentialParameters;
 
 pub type AuthenticatorInfo = Response;
 
@@ -9,7 +10,7 @@ pub type AuthenticatorInfo = Response;
 pub struct Response {
 
     // 0x01
-    pub versions: Vec<String<12>, 3>,
+    pub versions: Vec<String<12>, 4>,
 
     // 0x02
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -48,7 +49,12 @@ pub struct Response {
     // 0x09
     // FIDO_2_1
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub transports: Option<Vec<Bytes<8>, 4>>,
+    pub transports: Option<Vec<String<8>, 4>>,
+
+    // 0xA0
+    // FIDO_2_1
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub algorithms: Option<Vec<PublicKeyCredentialParameters, 4>>,
 
     // #[serde(skip_serializing_if = "Option::is_none")]
     // pub(crate) algorithms: Option<&'l[u8]>,
@@ -71,7 +77,7 @@ impl Default for Response {
             max_creds_in_list: None,
             max_cred_id_length: None,
             transports: None,
-            // algorithms: None,
+            algorithms: None,
         }
     }
 }
@@ -92,6 +98,8 @@ pub struct CtapOptions {
     pub cred_mgmt: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub client_pin: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub credential_mgmt_preview: Option<bool>,
 }
 
 impl Default for CtapOptions {
@@ -103,6 +111,7 @@ impl Default for CtapOptions {
             plat: None,
             cred_mgmt: None,
             client_pin: None,
+            credential_mgmt_preview: None,
         }
     }
 }

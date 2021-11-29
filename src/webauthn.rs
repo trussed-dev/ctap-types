@@ -54,6 +54,12 @@ pub struct PublicKeyCredentialParameters {
     pub key_type: String<32>,
 }
 
+impl PublicKeyCredentialParameters {
+    pub fn public_key_with_alg(alg: i32) -> Self {
+        return Self { alg, key_type: String::from("public-key") }
+    }
+}
+
 #[derive(Clone,Debug, Eq,PartialEq,Serialize,Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PublicKeyCredentialDescriptor {
