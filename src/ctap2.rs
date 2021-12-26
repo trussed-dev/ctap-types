@@ -14,6 +14,7 @@ pub mod client_pin;
 pub mod credential_management;
 pub mod get_assertion;
 pub mod get_info;
+pub mod large_blobs;
 pub mod make_credential;
 
 pub type Result<T> = core::result::Result<T, Error>;
@@ -39,6 +40,8 @@ pub enum Request<'a> {
     CredentialManagement(credential_management::Request),
     // 0xB
     Selection,
+    // 0xC
+    LargeBlobs(large_blobs::Request<'a>),
     // vendor, to be embellished
     // Q: how to handle the associated CBOR structures
     Vendor(crate::operation::VendorOperation),
@@ -134,6 +137,7 @@ pub enum Response {
     Reset,
     Selection,
     CredentialManagement(credential_management::Response),
+    LargeBlobs(large_blobs::Response),
     // Q: how to handle the associated CBOR structures
     Vendor,
 }
@@ -157,6 +161,7 @@ impl Response {
             },
             GetAssertion(response) | GetNextAssertion(response) => cbor_serialize(response, data),
             CredentialManagement(response) => cbor_serialize(response, data),
+            LargeBlobs(response) => cbor_serialize(response, data),
             Reset | Selection | Vendor => Ok([].as_slice()),
         };
         if let Ok(slice) = outcome {
@@ -445,6 +450,12 @@ pub trait Authenticator {
     fn selection(&mut self) -> Result<()>;
     fn vendor(&mut self, op: VendorOperation) -> Result<()>;
 
+    // Optional extensions
+    fn large_blobs(&mut self, request: &large_blobs::Request) -> Result<large_blobs::Response> {
+        let _ = request;
+        Err(Error::InvalidCommand)
+    }
+
     /// Dispatches the enum of possible requests into the appropriate trait method.
     #[inline(never)]
     fn call_ctap2(&mut self, request: &Request) -> Result<Response> {
@@ -528,6 +539,17 @@ pub trait Authenticator {
                     e
                 })?;
                 Ok(Response::Selection)
+            }
+
+            // 0xC
+            Request::LargeBlobs(request) => {
+                debug_now!("CTAP2.LB");
+                Ok(Response::LargeBlobs(self.large_blobs(request).map_err(
+                    |e| {
+                        debug!("error: {:?}", e);
+                        e
+                    },
+                )?))
             }
 
             // Not stable
