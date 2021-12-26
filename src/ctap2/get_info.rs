@@ -50,12 +50,17 @@ pub struct Response {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub transports: Option<Vec<String<8>, 4>>,
 
-    // 0xA0
+    // 0x0A
     // FIDO_2_1
     #[serde(skip_serializing_if = "Option::is_none")]
     pub algorithms: Option<Vec<PublicKeyCredentialParameters, 4>>,
     // #[serde(skip_serializing_if = "Option::is_none")]
     // pub(crate) algorithms: Option<&'l[u8]>,
+
+    // 0x0B
+    // FIDO_2_1
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_serialized_large_blob_array: Option<usize>,
 }
 
 impl Default for Response {
@@ -75,6 +80,7 @@ impl Default for Response {
             max_cred_id_length: None,
             transports: None,
             algorithms: None,
+            max_serialized_large_blob_array: None,
         }
     }
 }
@@ -97,6 +103,8 @@ pub struct CtapOptions {
     pub client_pin: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub credential_mgmt_preview: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub large_blobs: Option<bool>,
 }
 
 impl Default for CtapOptions {
@@ -109,6 +117,7 @@ impl Default for CtapOptions {
             cred_mgmt: None,
             client_pin: None,
             credential_mgmt_preview: None,
+            large_blobs: None,
         }
     }
 }
