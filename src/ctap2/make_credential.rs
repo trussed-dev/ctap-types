@@ -49,6 +49,11 @@ pub struct Extensions {
     #[serde(rename = "hmac-secret")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub hmac_secret: Option<bool>,
+
+    // See https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-20210615.html#sctn-largeBlobKey-extension
+    #[serde(rename = "largeBlobKey")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub large_blob_key: Option<bool>,
 }
 
 // // Approach 3:
@@ -195,6 +200,10 @@ pub struct Response {
     pub auth_data: super::SerializedAuthenticatorData,
     // pub att_stmt: Bytes<64>,
     pub att_stmt: AttestationStatement,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ep_att: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub large_blob_key: Option<Bytes<32>>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
