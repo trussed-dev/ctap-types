@@ -13,7 +13,7 @@ pub struct Response {
 
     // 0x02
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extensions: Option<Vec<String<11>, 4>>,
+    pub extensions: Option<Vec<String<13>, 4>>,
 
     // 0x03
     // #[serde(with = "serde_bytes")]
