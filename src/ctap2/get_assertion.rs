@@ -30,6 +30,10 @@ pub struct ExtensionsInput {
     #[serde(rename = "hmac-secret")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub hmac_secret: Option<HmacSecretInput>,
+    /// Whether a large blob key is requested.
+    #[serde(rename = "largeBlobKey")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub large_blob_key: Option<bool>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, Default)]
@@ -38,6 +42,9 @@ pub struct ExtensionsOutput {
     #[serde(skip_serializing_if = "Option::is_none")]
     // *either* enc(output1) *or* enc(output1 || output2)
     pub hmac_secret: Option<Bytes<64>>,
+    #[serde(rename = "largeBlobKey")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub large_blob_key: Option<Bytes<32>>,
 }
 
 pub struct NoAttestedCredentialData(core::marker::PhantomData<()>);
@@ -84,6 +91,12 @@ pub struct Response {
     pub user: Option<PublicKeyCredentialUserEntity>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub number_of_credentials: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub user_selected: Option<bool>,
+    /// A key that can be used to encrypt and decrypt large blob data.
+    /// See https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-20210615.html#sctn-getAssert-authnr-alg
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub large_blob_key: Option<Bytes<32>>,
 }
 
 pub type Responses = Vec<Response, 8>;
