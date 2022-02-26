@@ -4,7 +4,7 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 
 use crate::cose::EcdhEsHkdf256PublicKey;
 
-#[derive(Clone,Debug, Eq,PartialEq,Serialize_repr,Deserialize_repr)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize_repr, Deserialize_repr)]
 #[repr(u8)]
 pub enum PinV1Subcommand {
     GetRetries = 0x01,
@@ -21,7 +21,7 @@ pub enum PinV1Subcommand {
 // maximum PIN length: UTF-8 represented by <= 63 bytes
 // maximum consecutive incorrect PIN attempts: 8
 
-#[derive(Clone,Debug, Eq,PartialEq,SerializeIndexed,DeserializeIndexed)]
+#[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
 #[serde_indexed(offset = 1)]
 pub struct Parameters {
     // 0x01
@@ -55,10 +55,9 @@ pub struct Parameters {
     // Encrypted first 16 bytes of SHA-256 of PIN using `sharedSecret`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pin_hash_enc: Option<Bytes<64>>,
-
 }
 
-#[derive(Clone,Debug, Eq,PartialEq,SerializeIndexed,DeserializeIndexed)]
+#[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
 #[serde_indexed(offset = 1)]
 pub struct Response {
     // 0x01, like ClientPinParameters::key_agreement
@@ -72,7 +71,6 @@ pub struct Response {
     // 0x03, number of PIN attempts remaining before lockout
     #[serde(skip_serializing_if = "Option::is_none")]
     pub retries: Option<u8>,
-
 }
 
 #[cfg(test)]

@@ -2,18 +2,18 @@
 //!
 //! Data types and serde for public COSE_Keys
 //!
-//! https://tools.ietf.org/html/rfc8152#section-7
+//! <https://tools.ietf.org/html/rfc8152#section-7>
 //!
 //! A COSE Key structure is built on a CBOR map object.  The set of
 //! common parameters that can appear in a COSE Key can be found in the
 //! IANA "COSE Key Common Parameters" registry (Section 16.5).
 //!
-//! https://www.iana.org/assignments/cose/cose.xhtml#key-common-parameters
+//! <https://www.iana.org/assignments/cose/cose.xhtml#key-common-parameters>
 //!
 //! Additional parameters defined for specific key types can be found in
 //! the IANA "COSE Key Type Parameters" registry (Section 16.6).
 //!
-//! https://www.iana.org/assignments/cose/cose.xhtml#key-type-parameters
+//! <https://www.iana.org/assignments/cose/cose.xhtml#key-type-parameters>
 //!
 //!
 //! Key Type 1 (OKP)

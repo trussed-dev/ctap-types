@@ -4,9 +4,9 @@ use serde::{Deserialize, Serialize};
 use serde_indexed::{DeserializeIndexed, SerializeIndexed};
 
 use super::{AuthenticatorOptions, PinAuth};
+use crate::ctap2::credential_management::CredentialProtectionPolicy;
 use crate::sizes::*;
 use crate::webauthn::*;
-use crate::ctap2::credential_management::CredentialProtectionPolicy;
 
 // // Approach 1:
 // pub type AuthenticatorExtensions = heapless::LinearMap<String<11>, bool, 2>;
@@ -19,7 +19,7 @@ use crate::ctap2::credential_management::CredentialProtectionPolicy;
 //             "userVerificationOptional" => CredentialProtectionPolicy::Optional,
 //             "userVerificationOptionalWithCredentialIDList" => CredentialProtectionPolicy::OptionalWithCredentialIdList,
 //             "userVerificationRequired" => CredentialProtectionPolicy::Required,
-//             _ => { return Err(Self::Error::InvalidParameter); }
+//             _ => return Err(Self::Error::InvalidParameter),
 //         })
 //     }
 // }
@@ -32,13 +32,13 @@ impl core::convert::TryFrom<u8> for CredentialProtectionPolicy {
             1 => CredentialProtectionPolicy::Optional,
             2 => CredentialProtectionPolicy::OptionalWithCredentialIdList,
             3 => CredentialProtectionPolicy::Required,
-            _ => { return Err(Self::Error::InvalidParameter); }
+            _ => return Err(Self::Error::InvalidParameter),
         })
     }
 }
 
 // Approach 2:
-#[derive(Clone,Debug, Eq,PartialEq,Serialize,Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Extensions {
     #[serde(rename = "credProtect")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -46,11 +46,9 @@ pub struct Extensions {
     pub cred_protect: Option<u8>,
     // #[serde(serialize_with = "u8::from")]
     // pub cred_protect: Option<u8>,
-
     #[serde(rename = "hmac-secret")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub hmac_secret: Option<bool>,
-
 }
 
 // // Approach 3:
@@ -68,7 +66,7 @@ pub struct Extensions {
 //     pub extensions: Vec<AuthenticatorExtension, 3>,
 // }
 
-#[derive(Clone,Debug, Eq,PartialEq,SerializeIndexed,DeserializeIndexed)]
+#[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
 // #[serde(rename_all = "camelCase")]
 #[serde_indexed(offset = 1)]
 pub struct Parameters {
@@ -151,9 +149,9 @@ pub type AuthenticatorData = super::AuthenticatorData<AttestedCredentialData, Ex
 
 // NOTE: This is not CBOR, it has a custom encoding...
 // https://www.w3.org/TR/webauthn/#sec-attested-credential-data
-#[derive(Clone,Debug,Eq,PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct AttestedCredentialData {
-	pub aaguid: Bytes<16>,
+    pub aaguid: Bytes<16>,
     // this is where "unlimited non-resident keys" get stored
     // TODO: Model as actual credential ID, with ser/de to bytes (format is up to authenticator)
     pub credential_id: Bytes<MAX_CREDENTIAL_ID_LENGTH>,
@@ -168,9 +166,13 @@ impl super::SerializeAttestedCredentialData for AttestedCredentialData {
         bytes.extend_from_slice(&self.aaguid).unwrap();
 
         // byte length of credential ID as 16-bit unsigned big-endian integer.
-        bytes.extend_from_slice(&(self.credential_id.len() as u16).to_be_bytes()).unwrap();
+        bytes
+            .extend_from_slice(&(self.credential_id.len() as u16).to_be_bytes())
+            .unwrap();
         // raw bytes of credential ID
-        bytes.extend_from_slice(&self.credential_id[..self.credential_id.len()]).unwrap();
+        bytes
+            .extend_from_slice(&self.credential_id[..self.credential_id.len()])
+            .unwrap();
 
         // use existing `bytes` buffer
         // let mut cbor_key = [0u8; 128];
@@ -178,13 +180,15 @@ impl super::SerializeAttestedCredentialData for AttestedCredentialData {
         // CHANGE this back if credential_public_key is not serialized again
         // let l = crate::serde::cbor_serialize(&self.credential_public_key, &mut cbor_key).unwrap();
         // bytes.extend_from_slice(&cbor_key[..l]).unwrap();
-        bytes.extend_from_slice(&self.credential_public_key).unwrap();
+        bytes
+            .extend_from_slice(&self.credential_public_key)
+            .unwrap();
 
         Bytes::from(bytes)
     }
 }
 
-#[derive(Clone,Debug, Eq,PartialEq,SerializeIndexed)]
+#[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed)]
 #[serde_indexed(offset = 1)]
 pub struct Response {
     pub fmt: String<32>,
@@ -193,14 +197,15 @@ pub struct Response {
     pub att_stmt: AttestationStatement,
 }
 
-#[derive(Clone,Debug, Eq,PartialEq,Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
 #[serde(untagged)]
+#[allow(clippy::large_enum_variant)]
 pub enum AttestationStatement {
     None(NoneAttestationStatement),
     Packed(PackedAttestationStatement),
 }
 
-#[derive(Clone,Debug,Eq,PartialEq,Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
 #[serde(untagged)]
 pub enum AttestationStatementFormat {
     None,
@@ -211,10 +216,10 @@ pub enum AttestationStatementFormat {
     // FidoU2f,
 }
 
-#[derive(Clone,Debug, Eq,PartialEq,Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
 pub struct NoneAttestationStatement {}
 
-#[derive(Clone,Debug, Eq,PartialEq,Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
 pub struct PackedAttestationStatement {
     pub alg: i32,
     pub sig: Bytes<ASN1_SIGNATURE_LENGTH>,

@@ -1,3 +1,4 @@
+#![allow(clippy::declare_interior_mutable_const)]
 use crate::authenticator::{Error, Request, Response};
 
 // PRIOR ART:
@@ -7,4 +8,3 @@ use crate::authenticator::{Error, Request, Response};
 interchange::interchange! {
     CtapInterchange: (Request, Result<Response, Error>)
 }
-

@@ -14,7 +14,7 @@ use crate::webauthn::*;
 //     pub hmac_secret: Option<bool>,
 // }
 
-#[derive(Clone,Debug, Eq,PartialEq,SerializeIndexed,DeserializeIndexed)]
+#[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
 #[serde_indexed(offset = 1)]
 pub struct HmacSecretInput {
     pub key_agreement: EcdhEsHkdf256PublicKey,
@@ -22,17 +22,17 @@ pub struct HmacSecretInput {
     pub salt_enc: Bytes<64>,
     pub salt_auth: Bytes<16>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub pin_protocol: Option<u32>
+    pub pin_protocol: Option<u32>,
 }
 
-#[derive(Clone,Debug, Eq,PartialEq,Serialize,Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct ExtensionsInput {
     #[serde(rename = "hmac-secret")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub hmac_secret: Option<HmacSecretInput>,
 }
 
-#[derive(Clone,Debug, Eq,PartialEq,Serialize,Deserialize,Default)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, Default)]
 pub struct ExtensionsOutput {
     #[serde(rename = "hmac-secret")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -40,7 +40,7 @@ pub struct ExtensionsOutput {
     pub hmac_secret: Option<Bytes<64>>,
 }
 
-pub struct NoAttestedCredentialData (core::marker::PhantomData<()>);
+pub struct NoAttestedCredentialData(core::marker::PhantomData<()>);
 
 impl super::SerializeAttestedCredentialData for NoAttestedCredentialData {
     fn serialize(&self) -> Bytes<ATTESTED_CREDENTIAL_DATA_LENGTH> {
@@ -52,7 +52,7 @@ pub type AuthenticatorData = super::AuthenticatorData<NoAttestedCredentialData, 
 
 pub type AllowList = Vec<PublicKeyCredentialDescriptor, MAX_CREDENTIAL_COUNT_IN_LIST>;
 
-#[derive(Clone,Debug, Eq,PartialEq,SerializeIndexed,DeserializeIndexed)]
+#[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
 // #[serde(rename_all = "camelCase")]
 #[serde_indexed(offset = 1)]
 pub struct Parameters {
@@ -73,7 +73,7 @@ pub struct Parameters {
 // NB: attn object definition / order at end of
 // https://fidoalliance.org/specs/fido-v2.0-ps-20190130/fido-client-to-authenticator-protocol-v2.0-ps-20190130.html#authenticatorMakeCredential
 // does not coincide with what python-fido2 expects in AttestationObject.__init__ *at all* :'-)
-#[derive(Clone,Debug, Eq,PartialEq,SerializeIndexed,DeserializeIndexed)]
+#[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
 #[serde_indexed(offset = 1)]
 pub struct Response {
     #[serde(skip_serializing_if = "Option::is_none")]

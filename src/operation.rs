@@ -1,7 +1,7 @@
 use core::convert::TryFrom;
 
 /// the authenticator API, consisting of "operations"
-#[derive(Copy,Clone,Debug, Eq,PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum Operation {
     MakeCredential,
     GetAssertion,
@@ -21,10 +21,10 @@ pub enum Operation {
     Vendor(VendorOperation),
 }
 
-impl Into<u8> for Operation {
-    fn into(self) -> u8 {
+impl From<Operation> for u8 {
+    fn from(operation: Operation) -> u8 {
         use Operation::*;
-        match self {
+        match operation {
             MakeCredential => 0x01,
             GetAssertion => 0x02,
             GetNextAssertion => 0x08,
@@ -50,7 +50,7 @@ impl Operation {
 }
 
 /// Vendor CTAP2 operations, from 0x40 to 0x7f.
-#[derive(Copy,Clone,Debug, Eq,PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct VendorOperation(u8);
 
 impl VendorOperation {
@@ -70,9 +70,9 @@ impl TryFrom<u8> for VendorOperation {
     }
 }
 
-impl Into<u8> for VendorOperation {
-    fn into(self) -> u8 {
-        self.0
+impl From<VendorOperation> for u8 {
+    fn from(operation: VendorOperation) -> u8 {
+        operation.0
     }
 }
 
@@ -95,10 +95,10 @@ impl TryFrom<u8> for Operation {
             0x0D => Config,
             0x40 => PreviewBioEnrollment,
             0x41 => PreviewCredentialManagement,
-            code @ VendorOperation::FIRST..=VendorOperation::LAST
-                 => Vendor(VendorOperation::try_from(code)?),
+            code @ VendorOperation::FIRST..=VendorOperation::LAST => {
+                Vendor(VendorOperation::try_from(code)?)
+            }
             _ => return Err(()),
         })
     }
 }
-

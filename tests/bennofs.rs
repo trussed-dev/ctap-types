@@ -1,5 +1,5 @@
-use serde::{Serialize, Deserialize};
-use ctap_types::serde::{cbor_serialize, cbor_deserialize};
+use ctap_types::serde::{cbor_deserialize, cbor_serialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 struct Example {
