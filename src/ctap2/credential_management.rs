@@ -5,13 +5,11 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use crate::{
     cose::PublicKey,
     webauthn::{
-        PublicKeyCredentialDescriptor,
-        PublicKeyCredentialRpEntity,
-        PublicKeyCredentialUserEntity,
-    }
+        PublicKeyCredentialDescriptor, PublicKeyCredentialRpEntity, PublicKeyCredentialUserEntity,
+    },
 };
 
- #[derive(Copy,Clone,Debug, Eq,PartialEq,Serialize_repr,Deserialize_repr)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize_repr, Deserialize_repr)]
 // #[derive(Clone,Debug,Eq,PartialEq,Serialize, Deserialize)]
 // #[serde(tag = "credProtect")]
 #[repr(u8)]
@@ -30,21 +28,18 @@ impl core::default::Default for CredentialProtectionPolicy {
     }
 }
 
-
-
-#[derive(Clone,Copy,Debug, Eq,PartialEq,Serialize_repr,Deserialize_repr)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize_repr, Deserialize_repr)]
 #[repr(u8)]
-pub enum Subcommand  {
-    GetCredsMetadata = 0x01, // 1, 2
-    EnumerateRpsBegin = 0x02, // 3, 4, 5
-    EnumerateRpsGetNextRp = 0x03, //  3, 4
-    EnumerateCredentialsBegin = 0x04, // 6, 7, 8 ,9, A
+pub enum Subcommand {
+    GetCredsMetadata = 0x01,                      // 1, 2
+    EnumerateRpsBegin = 0x02,                     // 3, 4, 5
+    EnumerateRpsGetNextRp = 0x03,                 //  3, 4
+    EnumerateCredentialsBegin = 0x04,             // 6, 7, 8 ,9, A
     EnumerateCredentialsGetNextCredential = 0x05, // 6, 7, 8, A
-    DeleteCredential = 0x06, // -
+    DeleteCredential = 0x06,                      // -
 }
 
-
-#[derive(Clone,Debug, Eq,PartialEq,SerializeIndexed,DeserializeIndexed)]
+#[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
 #[serde_indexed(offset = 1)]
 pub struct SubcommandParameters {
     // 0x01
@@ -55,7 +50,7 @@ pub struct SubcommandParameters {
     pub credential_id: Option<PublicKeyCredentialDescriptor>,
 }
 
-#[derive(Clone,Debug, Eq,PartialEq,SerializeIndexed,DeserializeIndexed)]
+#[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
 #[serde_indexed(offset = 1)]
 pub struct Parameters {
     // 0x01
@@ -71,11 +66,10 @@ pub struct Parameters {
     pub pin_auth: Option<Bytes16>,
 }
 
-#[derive(Clone,Debug, Default,Eq,PartialEq,SerializeIndexed)]
+#[derive(Clone, Debug, Default, Eq, PartialEq, SerializeIndexed)]
 #[serde_indexed(offset = 1)]
 // #[derive(Clone,Debug, Default,Eq,PartialEq,Serialize,Deserialize)]
 pub struct Response {
-
     // Metadata
 
     // 0x01

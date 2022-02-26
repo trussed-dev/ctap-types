@@ -7,14 +7,20 @@
 // }
 
 #[derive(Clone, Debug, PartialEq)]
+// clippy says (2022-02-26): large size difference
+// - first is 88 bytes
+// - second is 10456 bytes
+#[allow(clippy::large_enum_variant)]
 pub enum Request {
     Ctap1(ctap1::Request),
     Ctap2(ctap2::Request),
 }
 
-// see below
 #[derive(Clone, Debug, PartialEq)]
-// #[derive(Debug)]
+// clippy says...large size difference
+// - first is 0 bytes
+// - second is 1880 bytes
+#[allow(clippy::large_enum_variant)]
 pub enum Response {
     Ctap1(ctap1::Response),
     Ctap2(ctap2::Response),
@@ -36,12 +42,13 @@ pub mod ctap1 {
         #[allow(non_camel_case_types)]
         _unused,
     }
-
 }
 pub mod ctap2 {
     pub use crate::ctap2::*;
 
     #[derive(Clone, Debug, PartialEq)]
+    #[allow(clippy::large_enum_variant)]
+    // clippy says...large size difference
     pub enum Request {
         // 0x1
         MakeCredential(make_credential::Parameters),
@@ -74,12 +81,11 @@ pub mod ctap2 {
         // Q: how to handle the associated CBOR structures
         Vendor,
     }
-
 }
 
 // pub type Result<T> = core::result::Result<T, Error>;
 
-#[derive(Clone,Copy,Debug, Eq,PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Error {
     Success = 0x00,
     InvalidCommand = 0x01,

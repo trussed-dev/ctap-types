@@ -1,14 +1,13 @@
+use crate::webauthn::PublicKeyCredentialParameters;
 use crate::{Bytes, String, Vec};
 use serde::{Deserialize, Serialize};
 use serde_indexed::{DeserializeIndexed, SerializeIndexed};
-use crate::webauthn::PublicKeyCredentialParameters;
 
 pub type AuthenticatorInfo = Response;
 
-#[derive(Clone,Debug, Eq,PartialEq,SerializeIndexed,DeserializeIndexed)]
+#[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
 #[serde_indexed(offset = 1)]
 pub struct Response {
-
     // 0x01
     pub versions: Vec<String<12>, 4>,
 
@@ -55,7 +54,6 @@ pub struct Response {
     // FIDO_2_1
     #[serde(skip_serializing_if = "Option::is_none")]
     pub algorithms: Option<Vec<PublicKeyCredentialParameters, 4>>,
-
     // #[serde(skip_serializing_if = "Option::is_none")]
     // pub(crate) algorithms: Option<&'l[u8]>,
 }
@@ -69,8 +67,7 @@ impl Default for Response {
         Self {
             versions: Vec::new(),
             extensions: None,
-            aaguid: aaguid,
-            // options: None,
+            aaguid,
             options: Some(CtapOptions::default()),
             max_msg_size: None, //Some(MESSAGE_SIZE),
             pin_protocols: None,
@@ -82,7 +79,7 @@ impl Default for Response {
     }
 }
 
-#[derive(Copy,Clone,Debug, Eq,PartialEq,Serialize,Deserialize)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CtapOptions {
     pub rk: bool,

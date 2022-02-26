@@ -19,9 +19,9 @@
 extern crate delog;
 generate_macros!();
 
-pub use heapless::{String, Vec};
 pub use heapless::spsc::{Consumer, Producer, Queue};
-pub use heapless_bytes::Bytes as Bytes;
+pub use heapless::{String, Vec};
+pub use heapless_bytes::Bytes;
 pub type Bytes16 = Bytes<16>;
 pub type Bytes32 = Bytes<32>;
 
@@ -37,5 +37,4 @@ pub mod sizes;
 pub mod webauthn;
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

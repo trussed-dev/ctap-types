@@ -1,14 +1,14 @@
 use bitflags::bitflags;
 use serde::{Deserialize, Serialize};
 
-use crate::Bytes;
 use crate::sizes::*;
+use crate::Bytes;
 
 pub mod client_pin;
 pub mod credential_management;
 pub mod get_assertion;
-pub mod get_next_assertion;
 pub mod get_info;
+pub mod get_next_assertion;
 pub mod make_credential;
 
 // TODO: this is a bit weird to model...
@@ -27,7 +27,7 @@ pub mod make_credential;
 //     // pub cred_protect:
 // }
 
-#[derive(Clone,Debug, Eq,PartialEq,Serialize,Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct AuthenticatorOptions {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub rk: Option<bool>,
@@ -131,7 +131,7 @@ pub trait SerializeAttestedCredentialData {
     fn serialize(&self) -> Bytes<ATTESTED_CREDENTIAL_DATA_LENGTH>;
 }
 
-#[derive(Clone,Debug,Eq,PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 // #[serde(rename_all = "camelCase")]
 pub struct AuthenticatorData<A, E> {
     pub rp_id_hash: Bytes<32>,
@@ -140,7 +140,7 @@ pub struct AuthenticatorData<A, E> {
     // this can get pretty long
     // pub attested_credential_data: Option<Bytes<ATTESTED_CREDENTIAL_DATA_LENGTH>>,
     pub attested_credential_data: Option<A>,
-    pub extensions: Option<E>
+    pub extensions: Option<E>,
 }
 
 pub type SerializedAuthenticatorData = Bytes<AUTHENTICATOR_DATA_LENGTH>;
@@ -157,11 +157,15 @@ impl<A: SerializeAttestedCredentialData, E: serde::Serialize> AuthenticatorData<
         // flags
         bytes.push(self.flags.bits()).unwrap();
         // signature counts as 32-bit unsigned big-endian integer.
-        bytes.extend_from_slice(&self.sign_count.to_be_bytes()).unwrap();
+        bytes
+            .extend_from_slice(&self.sign_count.to_be_bytes())
+            .unwrap();
 
         // the attested credential data
         if let Some(ref attested_credential_data) = &self.attested_credential_data {
-            bytes.extend_from_slice(&attested_credential_data.serialize()).unwrap();
+            bytes
+                .extend_from_slice(&attested_credential_data.serialize())
+                .unwrap();
         }
 
         // the extensions data
@@ -174,7 +178,6 @@ impl<A: SerializeAttestedCredentialData, E: serde::Serialize> AuthenticatorData<
         bytes
     }
 }
-
 
 // // TODO: add Default and builder
 // #[derive(Clone,Debug,Eq,PartialEq,Serialize)]

@@ -46,13 +46,11 @@ fn test_extensions_hmac_secret_input_key_agreement() {
 #[test]
 fn test_extensions_hmac_secret_salt_enc() {
     test::<ctap_types::Bytes<64>>(
-        b"X \xb9.\xb6\xaa\xdcS6;r'q\x93j\xb5~3\x1eN\xa1\xcc%\x0f\x8dVV\n\x87o\t\xc0\xb1\xcb"
+        b"X \xb9.\xb6\xaa\xdcS6;r'q\x93j\xb5~3\x1eN\xa1\xcc%\x0f\x8dVV\n\x87o\t\xc0\xb1\xcb",
     );
 }
 
 #[test]
 fn test_extensions_hmac_secret_salt_auth() {
-    test::<ctap_types::Bytes<16>>(
-        b"PaU/RA\xb9\x1a\x935\x8d<\xfd8\xabXs"
-    );
+    test::<ctap_types::Bytes<16>>(b"PaU/RA\xb9\x1a\x935\x8d<\xfd8\xabXs");
 }
