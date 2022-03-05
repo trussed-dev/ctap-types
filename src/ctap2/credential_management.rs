@@ -1,13 +1,16 @@
-use crate::{Bytes16, Bytes32};
 use serde_indexed::{DeserializeIndexed, SerializeIndexed};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 
 use crate::{
+    Bytes,
     cose::PublicKey,
     webauthn::{
         PublicKeyCredentialDescriptor, PublicKeyCredentialRpEntity, PublicKeyCredentialUserEntity,
     },
 };
+
+type Bytes16 = Bytes<16>;
+type Bytes32 = Bytes<32>;
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize_repr, Deserialize_repr)]
 // #[derive(Clone,Debug,Eq,PartialEq,Serialize, Deserialize)]
@@ -52,7 +55,7 @@ pub struct SubcommandParameters {
 
 #[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
 #[serde_indexed(offset = 1)]
-pub struct Parameters {
+pub struct Request {
     // 0x01
     pub sub_command: Subcommand,
     // 0x02

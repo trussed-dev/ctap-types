@@ -1,5 +1,3 @@
-use core::convert::TryFrom;
-
 /// the authenticator API, consisting of "operations"
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum Operation {

@@ -1,3 +1,5 @@
+//! Subset of WebAuthn types that crept into CTAP.
+
 use crate::sizes::*;
 use crate::{Bytes, String};
 use serde::{Deserialize, Serialize};

@@ -19,22 +19,26 @@
 extern crate delog;
 generate_macros!();
 
-pub use heapless::spsc::{Consumer, Producer, Queue};
+pub use heapless;
+pub use heapless_bytes;
 pub use heapless::{String, Vec};
 pub use heapless_bytes::Bytes;
-pub type Bytes16 = Bytes<16>;
-pub type Bytes32 = Bytes<32>;
 
 pub mod authenticator;
 pub mod cose;
 pub mod ctap1;
 pub mod ctap2;
-pub mod operation;
-pub mod rpc;
-// pub mod serde;
+pub(crate) mod operation;
 pub use cbor_smol as serde;
 pub mod sizes;
 pub mod webauthn;
 
+pub use ctap2::{Error, Result};
+
 #[cfg(test)]
 mod tests {}
+
+/// Call a remote procedure with a request, receive a response, maybe.
+pub trait Rpc<Error, Request, Response> {
+    fn call(&mut self, request: &Request) -> core::result::Result<Response, Error>;
+}
