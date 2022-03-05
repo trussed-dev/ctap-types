@@ -23,7 +23,7 @@ pub enum PinV1Subcommand {
 
 #[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
 #[serde_indexed(offset = 1)]
-pub struct Parameters {
+pub struct Request {
     // 0x01
     // PIN protocol version chosen by the client.
     // For this version of the spec, this SHALL be the number 1.

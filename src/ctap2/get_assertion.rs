@@ -55,7 +55,7 @@ pub type AllowList = Vec<PublicKeyCredentialDescriptor, MAX_CREDENTIAL_COUNT_IN_
 #[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
 // #[serde(rename_all = "camelCase")]
 #[serde_indexed(offset = 1)]
-pub struct Parameters {
+pub struct Request {
     pub rp_id: String<64>,
     pub client_data_hash: Bytes<32>,
     #[serde(skip_serializing_if = "Option::is_none")]

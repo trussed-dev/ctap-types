@@ -11,7 +11,7 @@ use crate::webauthn::*;
 // // Approach 1:
 // pub type AuthenticatorExtensions = heapless::LinearMap<String<11>, bool, 2>;
 
-// impl core::convert::TryFrom<&String<44>> for CredentialProtectionPolicy {
+// impl TryFrom<&String<44>> for CredentialProtectionPolicy {
 //     type Error = crate::authenticator::Error;
 
 //     fn try_from(value: &String<44>) -> Result<Self, Self::Error> {
@@ -24,8 +24,8 @@ use crate::webauthn::*;
 //     }
 // }
 
-impl core::convert::TryFrom<u8> for CredentialProtectionPolicy {
-    type Error = crate::authenticator::Error;
+impl TryFrom<u8> for CredentialProtectionPolicy {
+    type Error = super::Error;
 
     fn try_from(value: u8) -> Result<Self, Self::Error> {
         Ok(match value {
@@ -69,7 +69,7 @@ pub struct Extensions {
 #[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
 // #[serde(rename_all = "camelCase")]
 #[serde_indexed(offset = 1)]
-pub struct Parameters {
+pub struct Request {
     pub client_data_hash: Bytes<32>,
     pub rp: PublicKeyCredentialRpEntity,
     pub user: PublicKeyCredentialUserEntity,

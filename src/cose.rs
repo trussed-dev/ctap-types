@@ -1,4 +1,4 @@
-//! # cosey
+//! Because why wouldn't pile JOSE on top of CBOR...
 //!
 //! Data types and serde for public COSE_Keys
 //!
