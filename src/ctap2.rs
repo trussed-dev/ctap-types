@@ -6,10 +6,7 @@ use bitflags::bitflags;
 use cbor_smol::cbor_deserialize;
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    sizes::*,
-    Bytes, Vec,
-};
+use crate::{sizes::*, Bytes, Vec};
 
 pub use crate::operation::{Operation, VendorOperation};
 
@@ -19,9 +16,7 @@ pub mod get_assertion;
 pub mod get_info;
 pub mod make_credential;
 
-
 pub type Result<T> = core::result::Result<T, Error>;
-
 
 #[derive(Clone, Debug, PartialEq)]
 #[allow(clippy::large_enum_variant)]
@@ -55,17 +50,12 @@ pub enum CtapMappingError {
 impl From<CtapMappingError> for Error {
     fn from(mapping_error: CtapMappingError) -> Error {
         match mapping_error {
-            CtapMappingError::InvalidCommand(_cmd) => {
-                Error::InvalidCommand
-            }
-            CtapMappingError::ParsingError(cbor_error) => {
-                match cbor_error {
-                    cbor_smol::Error::SerdeMissingField =>Error::MissingParameter,
-                    _ => Error::InvalidCbor
-                }
-            }
+            CtapMappingError::InvalidCommand(_cmd) => Error::InvalidCommand,
+            CtapMappingError::ParsingError(cbor_error) => match cbor_error {
+                cbor_smol::Error::SerdeMissingField => Error::MissingParameter,
+                _ => Error::InvalidCbor,
+            },
         }
-
     }
 }
 
@@ -73,50 +63,57 @@ impl Request {
     /// Deserialize from CBOR where the first byte denotes the operation.
     #[inline(never)]
     pub fn deserialize(data: &[u8]) -> Result<Self> {
-
-        if data.len() < 1 {
-            return Err(CtapMappingError::ParsingError(cbor_smol::Error::DeserializeUnexpectedEnd))?;
+        if data.is_empty() {
+            return Err(
+                CtapMappingError::ParsingError(cbor_smol::Error::DeserializeUnexpectedEnd).into(),
+            );
         }
 
-        let (&op, data) = data.split_first()
-            .ok_or_else(|| CtapMappingError::ParsingError(cbor_smol::Error::DeserializeUnexpectedEnd))?;
+        let (&op, data) = data.split_first().ok_or(CtapMappingError::ParsingError(
+            cbor_smol::Error::DeserializeUnexpectedEnd,
+        ))?;
 
-        let operation = Operation::try_from(op)
-            .map_err(|_| {
-                debug_now!("invalid operation {}", op);
-                CtapMappingError::InvalidCommand(op)
-            })?;
+        let operation = Operation::try_from(op).map_err(|_| {
+            debug_now!("invalid operation {}", op);
+            CtapMappingError::InvalidCommand(op)
+        })?;
 
         info!("deser {:?}", operation);
         Ok(match operation {
-            Operation::MakeCredential =>
-                Request::MakeCredential(cbor_deserialize(data).map_err(CtapMappingError::ParsingError)?),
+            Operation::MakeCredential => Request::MakeCredential(
+                cbor_deserialize(data).map_err(CtapMappingError::ParsingError)?,
+            ),
 
-            Operation::GetAssertion =>
-                Request::GetAssertion(cbor_deserialize(data).map_err(CtapMappingError::ParsingError)?),
+            Operation::GetAssertion => Request::GetAssertion(
+                cbor_deserialize(data).map_err(CtapMappingError::ParsingError)?,
+            ),
 
             Operation::GetNextAssertion => Request::GetNextAssertion,
 
-            Operation::CredentialManagement | Operation::PreviewCredentialManagement =>
-                Request::CredentialManagement(cbor_deserialize(data).map_err(CtapMappingError::ParsingError)?),
+            Operation::CredentialManagement | Operation::PreviewCredentialManagement => {
+                Request::CredentialManagement(
+                    cbor_deserialize(data).map_err(CtapMappingError::ParsingError)?,
+                )
+            }
 
             Operation::Reset => Request::Reset,
 
             Operation::GetInfo => Request::GetInfo,
 
-            Operation::ClientPin =>
-                Request::ClientPin(cbor_deserialize(data).map_err(CtapMappingError::ParsingError)?),
+            Operation::ClientPin => {
+                Request::ClientPin(cbor_deserialize(data).map_err(CtapMappingError::ParsingError)?)
+            }
 
             // NB: FIDO Alliance "stole" 0x40 and 0x41, so these are not available
             Operation::Vendor(vendor_operation) => Request::Vendor(vendor_operation),
 
-            Operation::BioEnrollment |
-            Operation::PreviewBioEnrollment |
-            Operation::Config |
-            Operation::LargeBlobs |
-            Operation::Selection => {
+            Operation::BioEnrollment
+            | Operation::PreviewBioEnrollment
+            | Operation::Config
+            | Operation::LargeBlobs
+            | Operation::Selection => {
                 debug_now!("unhandled CBOR operation {:?}", operation);
-                return Err(CtapMappingError::InvalidCommand(op))?;
+                return Err(CtapMappingError::InvalidCommand(op).into());
             }
         })
     }
@@ -124,6 +121,7 @@ impl Request {
 
 #[derive(Clone, Debug, PartialEq)]
 /// Enum of all CTAP2 responses.
+#[allow(clippy::large_enum_variant)]
 pub enum Response {
     MakeCredential(make_credential::Response),
     GetAssertion(get_assertion::Response),
@@ -141,8 +139,8 @@ impl Response {
     pub fn serialize<const N: usize>(&self, buffer: &mut Vec<u8, N>) {
         buffer.resize_default(buffer.capacity()).ok();
         let (status, data) = buffer.split_first_mut().unwrap();
-        use Response::*;
         use cbor_smol::cbor_serialize;
+        use Response::*;
         let outcome = match self {
             GetInfo(response) => cbor_serialize(response, data),
             MakeCredential(response) => cbor_serialize(response, data),

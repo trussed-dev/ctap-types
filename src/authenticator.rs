@@ -43,4 +43,3 @@ pub trait Authenticator: ctap1::Authenticator + ctap2::Authenticator {
 impl<A: ctap1::Authenticator + ctap2::Authenticator> Authenticator for A {}
 
 // pub type Result<T> = core::result::Result<T, Error>;
-
