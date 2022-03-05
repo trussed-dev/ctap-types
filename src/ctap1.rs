@@ -245,10 +245,7 @@ pub trait Authenticator {
     /// Register a U2F credential.
     fn register(&mut self, request: &register::Request) -> Result<register::Response>;
     /// Authenticate with a U2F credential.
-    fn authenticate(
-        &mut self,
-        request: &authenticate::Request,
-    ) -> Result<authenticate::Response>;
+    fn authenticate(&mut self, request: &authenticate::Request) -> Result<authenticate::Response>;
     /// Supported U2F version.
     fn version() -> [u8; 6] {
         *b"U2F_V2"

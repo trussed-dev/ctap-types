@@ -20,8 +20,8 @@ extern crate delog;
 generate_macros!();
 
 pub use heapless;
-pub use heapless_bytes;
 pub use heapless::{String, Vec};
+pub use heapless_bytes;
 pub use heapless_bytes::Bytes;
 
 pub mod authenticator;
