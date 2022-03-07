@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2022-03-07
+
+- add CTAP2.1 Selection command
+- add CTAP2.1 options
+
+We will release this and yank 0.1.0, to avoid a minor version bump.
+
 ## [0.1.0] - 2022-03-05
 
 - use 2021 edition
