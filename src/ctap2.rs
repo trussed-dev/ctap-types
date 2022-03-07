@@ -37,6 +37,8 @@ pub enum Request {
     Reset,
     // 0xA
     CredentialManagement(credential_management::Request),
+    // 0xB
+    Selection,
     // vendor, to be embellished
     // Q: how to handle the associated CBOR structures
     Vendor(crate::operation::VendorOperation),
@@ -98,6 +100,8 @@ impl Request {
 
             Operation::Reset => Request::Reset,
 
+            Operation::Selection => Request::Selection,
+
             Operation::GetInfo => Request::GetInfo,
 
             Operation::ClientPin => {
@@ -110,8 +114,7 @@ impl Request {
             Operation::BioEnrollment
             | Operation::PreviewBioEnrollment
             | Operation::Config
-            | Operation::LargeBlobs
-            | Operation::Selection => {
+            | Operation::LargeBlobs => {
                 debug_now!("unhandled CBOR operation {:?}", operation);
                 return Err(CtapMappingError::InvalidCommand(op).into());
             }
@@ -129,6 +132,7 @@ pub enum Response {
     GetInfo(get_info::Response),
     ClientPin(client_pin::Response),
     Reset,
+    Selection,
     CredentialManagement(credential_management::Response),
     // Q: how to handle the associated CBOR structures
     Vendor,
@@ -147,7 +151,7 @@ impl Response {
             ClientPin(response) => cbor_serialize(response, data),
             GetAssertion(response) | GetNextAssertion(response) => cbor_serialize(response, data),
             CredentialManagement(response) => cbor_serialize(response, data),
-            Reset | Vendor => Ok([].as_slice()),
+            Reset | Selection | Vendor => Ok([].as_slice()),
         };
         if let Ok(slice) = outcome {
             *status = 0;
@@ -434,6 +438,7 @@ pub trait Authenticator {
         &mut self,
         request: &credential_management::Request,
     ) -> Result<credential_management::Response>;
+    fn selection(&mut self) -> Result<()>;
     fn vendor(&mut self, op: VendorOperation) -> Result<()>;
 
     /// Dispatches the enum of possible requests into the appropriate trait method.
@@ -509,6 +514,16 @@ pub trait Authenticator {
                         e
                     })?,
                 ))
+            }
+
+            // 0xB
+            Request::Selection => {
+                debug_now!("CTAP2.SEL");
+                self.selection().map_err(|e| {
+                    debug!("error: {:?}", e);
+                    e
+                })?;
+                Ok(Response::Selection)
             }
 
             // Not stable
