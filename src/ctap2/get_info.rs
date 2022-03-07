@@ -82,6 +82,8 @@ impl Default for Response {
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CtapOptions {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ep: Option<bool>, // default false
     pub rk: bool,
     pub up: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -92,23 +94,57 @@ pub struct CtapOptions {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub plat: Option<bool>, // default false
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub uv_acfg: Option<bool>, // default false
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub always_uv: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub cred_mgmt: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub authnr_cfg: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub bio_enroll: Option<bool>, // default false
     #[serde(skip_serializing_if = "Option::is_none")]
     pub client_pin: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub large_blobs: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub uv_bio_enroll: Option<bool>,
+    #[serde(rename = "setMinPINLength", skip_serializing_if = "Option::is_none")]
+    pub set_min_pin_length: Option<bool>, // default false
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pin_uv_auth_token: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub make_cred_uv_not_rqd: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub credential_mgmt_preview: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub user_verification_mgmt_preview: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub no_mc_ga_permissions_with_client_pin: Option<bool>,
 }
 
 impl Default for CtapOptions {
     fn default() -> Self {
         Self {
+            ep: None,
             rk: false,
             up: true,
             uv: None,
             plat: None,
+            uv_acfg: None,
+            always_uv: None,
             cred_mgmt: None,
+            authnr_cfg: None,
+            bio_enroll: None,
             client_pin: None,
+            large_blobs: None,
+            uv_bio_enroll: None,
+            pin_uv_auth_token: None,
+            set_min_pin_length: None,
+            make_cred_uv_not_rqd: None,
             credential_mgmt_preview: None,
+            user_verification_mgmt_preview: None,
+            no_mc_ga_permissions_with_client_pin: None,
         }
     }
 }
