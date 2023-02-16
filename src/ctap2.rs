@@ -158,7 +158,7 @@ impl Response {
                 } else {
                     cbor_serialize(response, data)
                 }
-            },
+            }
             GetAssertion(response) | GetNextAssertion(response) => cbor_serialize(response, data),
             CredentialManagement(response) => cbor_serialize(response, data),
             LargeBlobs(response) => cbor_serialize(response, data),
