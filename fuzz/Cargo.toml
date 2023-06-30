@@ -22,3 +22,6 @@ members = ["."]
 [[bin]]
 name = "example"
 path = "fuzz_targets/example.rs"
+
+[patch.crates-io]
+iso7816 = { git = "https://github.com/sosthene-nitrokey/iso7816.git", rev = "06d50afc232a2326ec90e08c266c6f8ad54b0735"}

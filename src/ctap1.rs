@@ -6,8 +6,7 @@ use crate::Bytes;
 
 pub const NO_ERROR: u16 = 0x9000;
 
-/// Re-export of the iso7816::Status.
-pub use iso7816::Status as Error;
+pub use iso7816::Status;
 
 pub mod authenticate {
     use super::{Bytes, ControlByte};
@@ -107,19 +106,19 @@ pub enum ControlByte {
 }
 
 impl TryFrom<u8> for ControlByte {
-    type Error = Error;
+    type Error = Status;
 
     fn try_from(byte: u8) -> Result<ControlByte> {
         match byte {
             0x07 => Ok(ControlByte::CheckOnly),
             0x03 => Ok(ControlByte::EnforceUserPresenceAndSign),
             0x08 => Ok(ControlByte::DontEnforceUserPresenceAndSign),
-            _ => Err(Error::IncorrectDataParameter),
+            _ => Err(Status::INCORRECT_PARAMETERS),
         }
     }
 }
 
-pub type Result<T> = core::result::Result<T, Error>;
+pub type Result<T> = core::result::Result<T, Status>;
 
 /// Type alias for convenience.
 pub type Register = register::Request;
@@ -176,7 +175,7 @@ impl Response {
 }
 
 impl<const S: usize> TryFrom<&iso7816::Command<S>> for Request {
-    type Error = Error;
+    type Error = Status;
     #[inline(never)]
     fn try_from(apdu: &iso7816::Command<S>) -> Result<Request> {
         let cla = apdu.class().into_inner();
@@ -188,7 +187,7 @@ impl<const S: usize> TryFrom<&iso7816::Command<S>> for Request {
         let _p2 = apdu.p2;
 
         if cla != 0 {
-            return Err(Error::ClassNotSupported);
+            return Err(Status::CLASS_NOT_SUPPORTED);
         }
 
         if ins == 0x3 {
@@ -203,7 +202,7 @@ impl<const S: usize> TryFrom<&iso7816::Command<S>> for Request {
             // register
             0x1 => {
                 if request.len() != 64 {
-                    return Err(Error::IncorrectDataParameter);
+                    return Err(Status::INCORRECT_PARAMETERS);
                 }
                 Ok(Request::Register(Register {
                     challenge: Bytes::from_slice(&request[..32]).unwrap(),
@@ -215,11 +214,11 @@ impl<const S: usize> TryFrom<&iso7816::Command<S>> for Request {
             0x2 => {
                 let control_byte = ControlByte::try_from(p1)?;
                 if request.len() < 65 {
-                    return Err(Error::IncorrectDataParameter);
+                    return Err(Status::INCORRECT_PARAMETERS);
                 }
                 let key_handle_length = request[64] as usize;
                 if request.len() != 65 + key_handle_length {
-                    return Err(Error::IncorrectDataParameter);
+                    return Err(Status::INCORRECT_PARAMETERS);
                 }
                 Ok(Request::Authenticate(Authenticate {
                     control_byte,
@@ -232,7 +231,7 @@ impl<const S: usize> TryFrom<&iso7816::Command<S>> for Request {
             // version
             0x3 => Ok(Request::Version),
 
-            _ => Err(Error::InstructionNotSupportedOrInvalid),
+            _ => Err(Status::INSTRUCTION_NOT_SUPPORTED_OR_INVALID),
         }
     }
 }
@@ -267,7 +266,7 @@ pub trait Authenticator {
     }
 }
 
-impl<A: Authenticator> crate::Rpc<Error, Request, Response> for A {
+impl<A: Authenticator> crate::Rpc<Status, Request, Response> for A {
     /// Dispatches the enum of possible requests into the appropriate trait method.
     fn call(&mut self, request: &Request) -> Result<Response> {
         self.call_ctap1(request)

@@ -26,5 +26,7 @@ serde_repr = "0.1"
 log-all = ["cbor-smol/log-all"]
 log-none = []
 
-# [patch.crates-io]
+[patch.crates-io]
+iso7816 = { git = "https://github.com/sosthene-nitrokey/iso7816.git", rev = "06d50afc232a2326ec90e08c266c6f8ad54b0735"}
+
 # heapless = { git = "https://github.com/nickray/heapless", branch = "bytebuf-0.5.6" }
