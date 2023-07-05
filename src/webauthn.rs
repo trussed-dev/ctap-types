@@ -2,15 +2,39 @@
 
 use crate::sizes::*;
 use crate::{Bytes, String};
-use serde::{Deserialize, Serialize};
+use serde::{de::Deserializer, Deserialize, Serialize};
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct PublicKeyCredentialRpEntity {
     pub id: String<256>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String<64>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub url: Option<String<64>>,
+    /// This field has been removed in Webauthn 2 but CTAP 2.2 requires implementors to accept it.
+    ///
+    /// The content of this field must not be stored.  Therefore we use the [`Icon`][] helper type.
+    ///
+    /// See [issue #9][] for more information.
+    ///
+    /// [issue #9]: https://github.com/solokeys/ctap-types/issues/9
+    #[serde(skip_serializing, alias = "url")]
+    pub icon: Option<Icon>,
+}
+
+/// Helper type for the `icon` field of [`PublicKeyCredentialRpEntity`][].
+///
+/// This field must be parsed but not used or stored.  Therefore this wrapper type can be
+/// deserialized from a string but does not store any data.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct Icon;
+
+impl<'de> Deserialize<'de> for Icon {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let _s: &'de str = Deserialize::deserialize(deserializer)?;
+        Ok(Self)
+    }
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
