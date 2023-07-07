@@ -7,7 +7,11 @@ use serde::{de::Deserializer, Deserialize, Serialize};
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct PublicKeyCredentialRpEntity {
     pub id: String<256>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "deserialize_from_str_and_truncate"
+    )]
     pub name: Option<String<64>>,
     /// This field has been removed in Webauthn 2 but CTAP 2.2 requires implementors to accept it.
     ///
@@ -47,9 +51,17 @@ pub struct PublicKeyCredentialUserEntity {
     )]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub icon: Option<String<128>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "deserialize_from_str_and_truncate"
+    )]
     pub name: Option<String<64>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "deserialize_from_str_and_truncate"
+    )]
     pub display_name: Option<String<64>>,
 }
 
@@ -67,6 +79,46 @@ where
             Ok(None)
         }
     }
+}
+
+fn deserialize_from_str_and_truncate<'de, D, const L: usize>(
+    deserializer: D,
+) -> Result<Option<String<L>>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let s: Option<&str> = serde::Deserialize::deserialize(deserializer)?;
+    Ok(s.map(truncate))
+}
+
+fn truncate<const L: usize>(s: &str) -> String<L> {
+    let split = floor_char_boundary(s, L);
+    let mut truncated = String::new();
+    // floor_char_boundary(s, L) <= L, so this cannot fail
+    truncated.push_str(&s[..split]).unwrap();
+    truncated
+}
+
+// Copy of the nightly str::floor_char_boundary function
+fn floor_char_boundary(s: &str, index: usize) -> usize {
+    if index >= s.len() {
+        s.len()
+    } else {
+        let lower_bound = index.saturating_sub(3);
+        let new_index = s.as_bytes()[lower_bound..=index]
+            .iter()
+            .rposition(|b| is_utf8_char_boundary(*b));
+
+        // SAFETY: we know that the character boundary will be within four bytes
+        unsafe { lower_bound + new_index.unwrap_unchecked() }
+    }
+}
+
+// Copy of the private u8::is_utf8_char_boundary function
+#[inline]
+const fn is_utf8_char_boundary(b: u8) -> bool {
+    // This is bit magic equivalent to: b < 128 || b >= 192
+    (b as i8) >= -0x40
 }
 
 impl PublicKeyCredentialUserEntity {
@@ -106,4 +158,23 @@ pub struct PublicKeyCredentialDescriptor {
     pub key_type: String<32>,
     // https://w3c.github.io/webauthn/#enumdef-authenticatortransport
     // transports: ...
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_truncate() {
+        // Example from § 6.4.1 String Truncation in the Webauthn spec
+        let v = vec![0x61, 0x67, 0xcc, 0x88];
+        let s = std::str::from_utf8(&v).unwrap();
+
+        assert_eq!(truncate::<1>(s), "a");
+        assert_eq!(truncate::<2>(s), "ag");
+        assert_eq!(truncate::<3>(s), "ag");
+        assert_eq!(truncate::<4>(s), s);
+        assert_eq!(truncate::<5>(s), s);
+        assert_eq!(truncate::<64>(s), s);
+    }
 }
