@@ -73,6 +73,12 @@ pub struct Response {
     pub retries: Option<u8>,
 }
 
+impl Response {
+    pub fn is_empty(&self) -> bool {
+        self.key_agreement.is_none() && self.pin_token.is_none() && self.retries.is_none()
+    }
+}
+
 #[cfg(test)]
 mod tests {
 
