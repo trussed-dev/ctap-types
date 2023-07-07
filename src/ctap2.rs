@@ -148,7 +148,13 @@ impl Response {
         let outcome = match self {
             GetInfo(response) => cbor_serialize(response, data),
             MakeCredential(response) => cbor_serialize(response, data),
-            ClientPin(response) => cbor_serialize(response, data),
+            ClientPin(response) => {
+                if response.is_empty() {
+                    Ok([].as_slice())
+                } else {
+                    cbor_serialize(response, data)
+                }
+            },
             GetAssertion(response) | GetNextAssertion(response) => cbor_serialize(response, data),
             CredentialManagement(response) => cbor_serialize(response, data),
             Reset | Selection | Vendor => Ok([].as_slice()),
