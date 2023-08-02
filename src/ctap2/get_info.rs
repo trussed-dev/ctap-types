@@ -1,4 +1,4 @@
-use crate::webauthn::PublicKeyCredentialParameters;
+use crate::webauthn::FilteredPublicKeyCredentialParameters;
 use crate::{Bytes, String, Vec};
 use serde::{Deserialize, Serialize};
 use serde_indexed::{DeserializeIndexed, SerializeIndexed};
@@ -53,7 +53,7 @@ pub struct Response {
     // 0xA0
     // FIDO_2_1
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub algorithms: Option<Vec<PublicKeyCredentialParameters, 4>>,
+    pub algorithms: Option<FilteredPublicKeyCredentialParameters>,
     // #[serde(skip_serializing_if = "Option::is_none")]
     // pub(crate) algorithms: Option<&'l[u8]>,
 }

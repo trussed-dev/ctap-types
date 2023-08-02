@@ -132,6 +132,103 @@ impl PublicKeyCredentialUserEntity {
     }
 }
 
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct KnownPublicKeyCredentialParameters {
+    pub alg: i32,
+}
+
+impl From<KnownPublicKeyCredentialParameters> for PublicKeyCredentialParameters {
+    fn from(value: KnownPublicKeyCredentialParameters) -> Self {
+        Self {
+            alg: value.alg,
+            key_type: String::from("public-key"),
+        }
+    }
+}
+
+pub enum UnknownPKCredentialParam {
+    UnknownType,
+    UnknownAlg,
+}
+
+/// ECDSA w/ SHA-256
+pub const ES256: i32 = -7;
+/// EdDSA
+pub const ED_DSA: i32 = -8;
+
+pub const COUNT_KNOWN_ALGS: usize = 2;
+pub const KNOWN_ALGS: [i32; COUNT_KNOWN_ALGS] = [ES256, ED_DSA];
+
+impl TryFrom<PublicKeyCredentialParameters> for KnownPublicKeyCredentialParameters {
+    type Error = UnknownPKCredentialParam;
+
+    fn try_from(value: PublicKeyCredentialParameters) -> Result<Self, Self::Error> {
+        if value.key_type != "public-key" {
+            Err(UnknownPKCredentialParam::UnknownType)
+        } else if KNOWN_ALGS.contains(&value.alg) {
+            Ok(Self { alg: value.alg })
+        } else {
+            Err(UnknownPKCredentialParam::UnknownAlg)
+        }
+    }
+}
+
+/// Struct of filtered PublicKeyCredentialParameters, that drops unknown algorithms while parsing
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct FilteredPublicKeyCredentialParameters(
+    pub heapless::Vec<KnownPublicKeyCredentialParameters, COUNT_KNOWN_ALGS>,
+);
+
+impl Serialize for FilteredPublicKeyCredentialParameters {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeSeq;
+        let mut seq = serializer.serialize_seq(Some(self.0.len()))?;
+        for element in &self.0 {
+            let el: PublicKeyCredentialParameters = element.clone().into();
+            seq.serialize_element(&el)?
+        }
+        seq.end()
+    }
+}
+
+impl<'de> Deserialize<'de> for FilteredPublicKeyCredentialParameters {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        struct ValueVisitor;
+        impl<'de> serde::de::Visitor<'de> for ValueVisitor {
+            type Value = FilteredPublicKeyCredentialParameters;
+
+            fn expecting(&self, formatter: &mut core::fmt::Formatter) -> core::fmt::Result {
+                formatter.write_str("a sequence")
+            }
+
+            fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
+            where
+                A: serde::de::SeqAccess<'de>,
+            {
+                let mut values = FilteredPublicKeyCredentialParameters(Default::default());
+                while let Some(value) = seq.next_element::<PublicKeyCredentialParameters>()? {
+                    let Ok(el) = value.try_into() else {
+                        // Drop unknown algorithms
+                        continue;
+                    };
+                    // We drop too many elements. This shouldn't happen as we have enough space for all known algorithms.
+                    // This can only happen in case of duplicates.
+                    values.0.push(el).ok();
+                }
+                Ok(values)
+            }
+        }
+
+        deserializer.deserialize_seq(ValueVisitor)
+    }
+}
+
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct PublicKeyCredentialParameters {
     pub alg: i32,
