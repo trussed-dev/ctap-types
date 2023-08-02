@@ -22,11 +22,11 @@ pub type Result<T> = core::result::Result<T, Error>;
 #[allow(clippy::large_enum_variant)]
 // clippy says...large size difference
 /// Enum of all CTAP2 requests.
-pub enum Request {
+pub enum Request<'a> {
     // 0x1
-    MakeCredential(make_credential::Request),
+    MakeCredential(make_credential::Request<'a>),
     // 0x2
-    GetAssertion(get_assertion::Request),
+    GetAssertion(get_assertion::Request<'a>),
     // 0x8
     GetNextAssertion,
     // 0x4
@@ -61,10 +61,10 @@ impl From<CtapMappingError> for Error {
     }
 }
 
-impl Request {
+impl<'a> Request<'a> {
     /// Deserialize from CBOR where the first byte denotes the operation.
     #[inline(never)]
-    pub fn deserialize(data: &[u8]) -> Result<Self> {
+    pub fn deserialize(data: &'a [u8]) -> Result<Self> {
         if data.is_empty() {
             return Err(
                 CtapMappingError::ParsingError(cbor_smol::Error::DeserializeUnexpectedEnd).into(),
@@ -241,7 +241,7 @@ pub struct AuthenticatorOptions {
 //pub struct CredentialPublicKey {
 //}
 
-pub type PinAuth = Bytes<16>;
+pub type PinAuth = serde_byte_array::ByteArray<16>;
 
 // #[derive(Clone,Debug,Eq,PartialEq)]
 // // #[serde(rename_all = "camelCase")]
@@ -545,7 +545,7 @@ pub trait Authenticator {
     }
 }
 
-impl<A: Authenticator> crate::Rpc<Error, Request, Response> for A {
+impl<'a, A: Authenticator> crate::Rpc<Error, Request<'a>, Response> for A {
     /// Dispatches the enum of possible requests into the appropriate trait method.
     #[inline(never)]
     fn call(&mut self, request: &Request) -> Result<Response> {
