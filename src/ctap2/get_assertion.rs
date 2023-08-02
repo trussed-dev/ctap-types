@@ -50,22 +50,22 @@ impl super::SerializeAttestedCredentialData for NoAttestedCredentialData {
 
 pub type AuthenticatorData = super::AuthenticatorData<NoAttestedCredentialData, ExtensionsOutput>;
 
-pub type AllowList = Vec<PublicKeyCredentialDescriptor, MAX_CREDENTIAL_COUNT_IN_LIST>;
+pub type AllowList<'a> = Vec<PublicKeyCredentialDescriptorRef<'a>, MAX_CREDENTIAL_COUNT_IN_LIST>;
 
 #[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
 // #[serde(rename_all = "camelCase")]
 #[serde_indexed(offset = 1)]
-pub struct Request {
+pub struct Request<'a> {
     pub rp_id: String<64>,
     pub client_data_hash: Bytes<32>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub allow_list: Option<AllowList>,
+    pub allow_list: Option<AllowList<'a>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub extensions: Option<ExtensionsInput>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub options: Option<AuthenticatorOptions>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub pin_auth: Option<PinAuth>,
+    pub pin_auth: Option<&'a PinAuth>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pin_protocol: Option<u32>,
 }

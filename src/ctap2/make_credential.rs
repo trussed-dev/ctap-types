@@ -69,20 +69,20 @@ pub struct Extensions {
 #[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
 // #[serde(rename_all = "camelCase")]
 #[serde_indexed(offset = 1)]
-pub struct Request {
-    pub client_data_hash: Bytes<32>,
+pub struct Request<'a> {
+    pub client_data_hash: &'a serde_bytes::Bytes,
     pub rp: PublicKeyCredentialRpEntity,
     pub user: PublicKeyCredentialUserEntity,
     // e.g. webauthn.io sends 10
     pub pub_key_cred_params: Vec<PublicKeyCredentialParameters, 12>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub exclude_list: Option<Vec<PublicKeyCredentialDescriptor, 16>>,
+    pub exclude_list: Option<Vec<PublicKeyCredentialDescriptorRef<'a>, 16>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub extensions: Option<Extensions>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub options: Option<AuthenticatorOptions>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub pin_auth: Option<PinAuth>,
+    pub pin_auth: Option<&'a PinAuth>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pin_protocol: Option<u32>,
 }
@@ -200,6 +200,7 @@ pub struct Response {
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
 #[serde(untagged)]
 #[allow(clippy::large_enum_variant)]
+// In respose
 pub enum AttestationStatement {
     None(NoneAttestationStatement),
     Packed(PackedAttestationStatement),
