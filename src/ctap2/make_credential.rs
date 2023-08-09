@@ -200,7 +200,6 @@ pub struct Response {
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
 #[serde(untagged)]
 #[allow(clippy::large_enum_variant)]
-// In respose
 pub enum AttestationStatement {
     None(NoneAttestationStatement),
     Packed(PackedAttestationStatement),
