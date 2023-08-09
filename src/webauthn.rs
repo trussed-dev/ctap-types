@@ -164,8 +164,6 @@ pub struct PublicKeyCredentialDescriptor {
 #[serde(rename_all = "camelCase")]
 /// Same as PublicKeyCredentialDescriptor but which deserializes using references
 pub struct PublicKeyCredentialDescriptorRef<'a> {
-    // NB: if this is too small, get a nasty error
-    // See serde::error/custom for more info
     pub id: &'a serde_bytes::Bytes,
     #[serde(rename = "type")]
     pub key_type: &'a str,
