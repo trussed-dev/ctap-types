@@ -3,7 +3,7 @@ use crate::{Bytes, String, Vec};
 use serde::{Deserialize, Serialize};
 use serde_indexed::{DeserializeIndexed, SerializeIndexed};
 
-use super::{AuthenticatorOptions, PinAuth};
+use super::AuthenticatorOptions;
 use crate::ctap2::credential_management::CredentialProtectionPolicy;
 use crate::sizes::*;
 use crate::webauthn::*;
@@ -82,7 +82,7 @@ pub struct Request<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub options: Option<AuthenticatorOptions>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub pin_auth: Option<&'a PinAuth>,
+    pub pin_auth: Option<&'a serde_bytes::Bytes>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pin_protocol: Option<u32>,
 }

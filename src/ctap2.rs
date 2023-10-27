@@ -241,8 +241,6 @@ pub struct AuthenticatorOptions {
 //pub struct CredentialPublicKey {
 //}
 
-pub type PinAuth = serde_byte_array::ByteArray<16>;
-
 // #[derive(Clone,Debug,Eq,PartialEq)]
 // // #[serde(rename_all = "camelCase")]
 // pub struct AuthenticatorData {
