@@ -1,4 +1,4 @@
-fn test<T: serde::de::DeserializeOwned + std::fmt::Debug>(data: &[u8]) {
+fn test<'data, T: serde::Deserialize<'data> + std::fmt::Debug>(data: &'data [u8]) {
     let result = ctap_types::serde::cbor_deserialize::<T>(data);
     assert!(result.is_ok(), "{:?}", result);
 }
