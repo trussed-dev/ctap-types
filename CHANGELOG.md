@@ -11,11 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Truncate overlong `name` and `displayName` values for `PublicKeyCredentialEntity` instances ([#30][])
 - Send empty response to clientPin instead of empty map ([#13][])
 - Use references rather owned byte vectors to reduce the size of structs ([#16][])
+- Accept more than 12 algorithms ([#17][])
 
 [#9]: https://github.com/solokeys/ctap-types/issues/9
 [#30]: https://github.com/solokeys/fido-authenticator/issues/30
 [#13]: https://github.com/solokeys/ctap-types/issues/13
 [#16]: https://github.com/trussed-dev/ctap-types/pull/16
+[#17]: https://github.com/trussed-dev/ctap-types/pull/17
 
 ## [0.1.2] - 2022-03-07
 
