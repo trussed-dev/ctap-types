@@ -12,23 +12,18 @@ use crate::{
 type Bytes16 = Bytes<16>;
 type Bytes32 = Bytes<32>;
 
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize_repr, Deserialize_repr)]
+#[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Serialize_repr, Deserialize_repr)]
 // #[derive(Clone,Debug,Eq,PartialEq,Serialize, Deserialize)]
 // #[serde(tag = "credProtect")]
 #[repr(u8)]
 pub enum CredentialProtectionPolicy {
     // #[serde(rename = "userVerificationOptional")]
+    #[default]
     Optional = 1,
     // #[serde(rename = "userVerificationOptionalWithCredentialIDList")] // <-- len = 44
     OptionalWithCredentialIdList = 2,
     // #[serde(rename = "userVerificationRequired")]
     Required = 3,
-}
-
-impl core::default::Default for CredentialProtectionPolicy {
-    fn default() -> Self {
-        CredentialProtectionPolicy::Optional
-    }
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize_repr, Deserialize_repr)]

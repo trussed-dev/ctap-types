@@ -158,7 +158,7 @@ impl Response {
                 } else {
                     cbor_serialize(response, data)
                 }
-            },
+            }
             GetAssertion(response) | GetNextAssertion(response) => cbor_serialize(response, data),
             CredentialManagement(response) => cbor_serialize(response, data),
             LargeBlobs(response) => cbor_serialize(response, data),
@@ -281,7 +281,6 @@ pub struct AuthenticatorOptions {
 
 bitflags! {
     pub struct AuthenticatorDataFlags: u8 {
-        const EMPTY = 0;
         const USER_PRESENCE = 1 << 0;
         const USER_VERIFIED = 1 << 2;
         const ATTESTED_CREDENTIAL_DATA = 1 << 6;
