@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+[Unreleased]: https://github.com/trussed-dev/ctap-types/compare/0.2.0...HEAD
+
+-
+
+## [0.2.0] - 2024-06-21
+
+[0.2.0]: https://github.com/trussed-dev/ctap-types/compare/0.1.2...0.2.0
+
 - Rename `url` to `icon` in `PublicKeyCredentialRpEntity` and ignore its
   content ([#9][])
 - Truncate overlong `name` and `displayName` values for `PublicKeyCredentialEntity` instances ([#30][])
@@ -39,9 +47,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.2] - 2022-03-07
 
+[0.1.2]: https://github.com/trussed-dev/ctap-types/compare/0.1.1...0.1.2
+
 Yanked 0.1.1 instead of 0.1.0 by mistake, re-releasing.
 
 ## [0.1.1] - 2022-03-07
+
+[0.1.1]: https://github.com/trussed-dev/ctap-types/compare/0.1.0...0.1.1
 
 - add CTAP2.1 Selection command
 - add CTAP2.1 options
@@ -49,6 +61,8 @@ Yanked 0.1.1 instead of 0.1.0 by mistake, re-releasing.
 We will release this and yank 0.1.0, to avoid a minor version bump.
 
 ## [0.1.0] - 2022-03-05
+
+[0.1.0]: https://github.com/trussed-dev/ctap-types/releases/tag/0.1.0
 
 - use 2021 edition
 - make CTAP1 and CTAP2 more homogeneous
