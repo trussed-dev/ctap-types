@@ -14,7 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Accept more than 12 algorithms ([#17][])
 - Add support for the `largeBlobKey` extension ([#18][])
 - Remove `AuthenticatorDataFlags::EMPTY` (use `AuthenticatorDataFlags::empty()` instead)
+- Allow missing algorithms in COSE keys ([#8][])
 
+[#8]: https://github.com/trussed-dev/ctap-types/pull/8
 [#9]: https://github.com/solokeys/ctap-types/issues/9
 [#30]: https://github.com/solokeys/fido-authenticator/issues/30
 [#13]: https://github.com/solokeys/ctap-types/issues/13
