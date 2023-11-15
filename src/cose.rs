@@ -422,12 +422,13 @@ fn check_key_constants<K: PublicKeyConstants, E: serde::de::Error>(
     crv: Option<Crv>,
 ) -> Result<(), E> {
     let kty = kty.ok_or_else(|| E::missing_field("kty"))?;
-    let alg = alg.ok_or_else(|| E::missing_field("alg"))?;
     if kty != K::KTY {
         return Err(E::invalid_value(Unexpected::Signed(kty as _), &K::KTY));
     }
-    if alg != K::ALG {
-        return Err(E::invalid_value(Unexpected::Signed(alg as _), &K::ALG));
+    if let Some(alg) = alg {
+        if alg != K::ALG {
+            return Err(E::invalid_value(Unexpected::Signed(alg as _), &K::ALG));
+        }
     }
     if K::CRV != Crv::None {
         let crv = crv.ok_or_else(|| E::missing_field("crv"))?;

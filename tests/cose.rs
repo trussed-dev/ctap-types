@@ -54,6 +54,50 @@ fn test_de<T: DeserializeOwned + Debug + PartialEq>(s: &str, data: T) {
     assert_eq!(data, deserialized);
 }
 
+fn test_de_alg<T: Serialize + DeserializeOwned + Debug + PartialEq>(
+    data: T,
+    alg: Option<i8>,
+) -> bool {
+    let serialized_value = Value::serialized(&data).unwrap();
+    let mut fields = serialized_value.into_map().unwrap();
+    // this must be alg
+    assert_eq!(fields[1].0, Value::Integer(3.into()));
+
+    let expect_success = if let Some(alg) = alg {
+        // alg values may only work if they are correct
+        let alg = Value::Integer(alg.into());
+        if fields[1].1 == alg {
+            true
+        } else {
+            fields[1].1 = alg;
+            false
+        }
+    } else {
+        // deserialization without alg must work
+        fields.remove(1);
+        true
+    };
+
+    let (deserialized, serialized) = deserialize_map::<T>(fields);
+    let is_success = deserialized.is_ok() == expect_success;
+
+    if !is_success {
+        if alg.is_some() {
+            if expect_success {
+                println!("Expected correct deserialization for original algorithm");
+            } else {
+                println!("Expected error for invalid algorithm");
+            }
+        } else {
+            println!("Expected correct deserialization for missing algorithm");
+        }
+        println!("alg: {:?}", alg);
+        print_input_output(&data, &serialized, &deserialized);
+    }
+
+    is_success
+}
+
 fn test_de_order<T: Serialize + DeserializeOwned + Debug + PartialEq>(data: T) -> bool {
     let serialized_value = Value::serialized(&data).unwrap();
     let canonical_fields = serialized_value.into_map().unwrap();
@@ -165,5 +209,25 @@ quickcheck::quickcheck! {
         test_de_order(Ed25519PublicKey {
             x: x.0,
         })
+    }
+
+    fn de_alg_p256(x: Input, y: Input, alg: Option<i8>) -> bool {
+        test_de_alg(P256PublicKey {
+            x: x.0,
+            y: y.0,
+        }, alg)
+    }
+
+    fn de_alg_ecdh(x: Input, y: Input, alg: Option<i8>) -> bool {
+        test_de_alg(EcdhEsHkdf256PublicKey {
+            x: x.0,
+            y: y.0,
+        }, alg)
+    }
+
+    fn de_alg_ed25519(x: Input, alg: Option<i8>) -> bool {
+        test_de_alg(Ed25519PublicKey {
+            x: x.0,
+        }, alg)
     }
 }
