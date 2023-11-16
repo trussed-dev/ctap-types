@@ -1,6 +1,6 @@
 [package]
 name = "ctap-types"
-version = "0.1.2"
+version = "0.1.3"
 authors = ["Nicolas Stalder <n@stalder.io>"]
 edition = "2021"
 license = "Apache-2.0 OR MIT"
@@ -23,13 +23,16 @@ serde-byte-array = "0.1.2"
 serde-indexed = "0.1"
 serde_bytes = { version = "0.11.12", default-features = false }
 serde_repr = "0.1"
+serde_derive = { version = "1.0", optional = true }
 
 [dev-dependencies]
 serde = { version = "1" }
+serde_test = "1.0"
 
 [features]
 log-all = ["cbor-smol/log-all"]
 log-none = []
+alloc = ["serde/alloc", "serde_derive"]
 
 [patch.crates-io]
 # heapless = { git = "https://github.com/nickray/heapless", branch = "bytebuf-0.5.6" }
