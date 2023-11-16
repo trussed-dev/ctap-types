@@ -45,7 +45,7 @@
 use crate::Bytes;
 use core::fmt::{self, Formatter};
 use serde::{
-    de::{Error as _, Expected, MapAccess, Unexpected},
+    de::{Error as _, Expected, IgnoredAny, MapAccess, Unexpected},
     Deserialize, Serialize,
 };
 use serde_repr::{Deserialize_repr, Serialize_repr};
@@ -200,62 +200,51 @@ impl<'de> Deserialize<'de> for RawPublicKey {
             where
                 V: MapAccess<'de>,
             {
-                #[derive(PartialEq)]
-                enum Key {
-                    Label(Label),
-                    Unknown(i8),
-                    None,
-                }
-
-                fn next_key<'a, V: MapAccess<'a>>(map: &mut V) -> Result<Key, V::Error> {
-                    let key: Option<i8> = map.next_key()?;
-                    let key = match key {
-                        Some(key) => match Label::try_from(key) {
-                            Ok(label) => Key::Label(label),
-                            Err(_) => Key::Unknown(key),
-                        },
-                        None => Key::None,
-                    };
-                    Ok(key)
+                fn next_key<'a, V: MapAccess<'a>>(map: &mut V) -> Result<Option<Label>, V::Error> {
+                    while let Some(key) = map.next_key::<i8>()? {
+                        if let Ok(label) = Label::try_from(key) {
+                            return Ok(Some(label));
+                        }
+                        // if we skip the key, we still have to process the value
+                        let _: IgnoredAny = map.next_value()?;
+                    }
+                    Ok(None)
                 }
 
                 let mut public_key = RawPublicKey::default();
-
-                // As we cannot deserialize arbitrary values with cbor-smol, we do not support
-                // unknown keys before a known key.  If there are unknown keys, they must be at the
-                // end.
 
                 // only deserialize in canonical order
 
                 let mut key = next_key(&mut map)?;
 
-                if key == Key::Label(Label::Kty) {
+                if key == Some(Label::Kty) {
                     public_key.kty = Some(map.next_value()?);
                     key = next_key(&mut map)?;
                 }
 
-                if key == Key::Label(Label::Alg) {
+                if key == Some(Label::Alg) {
                     public_key.alg = Some(map.next_value()?);
                     key = next_key(&mut map)?;
                 }
 
-                if key == Key::Label(Label::Crv) {
+                if key == Some(Label::Crv) {
                     public_key.crv = Some(map.next_value()?);
                     key = next_key(&mut map)?;
                 }
 
-                if key == Key::Label(Label::X) {
+                if key == Some(Label::X) {
                     public_key.x = Some(map.next_value()?);
                     key = next_key(&mut map)?;
                 }
 
-                if key == Key::Label(Label::Y) {
+                if key == Some(Label::Y) {
                     public_key.y = Some(map.next_value()?);
                     key = next_key(&mut map)?;
                 }
 
-                // if there is another key, it should be an unknown one
-                if matches!(key, Key::Label(_)) {
+                // we parsed all known keys in canonical order, so we should not see any more kown
+                // keys
+                if key.is_some() {
                     Err(serde::de::Error::custom(
                         "public key data in wrong order or with duplicates",
                     ))

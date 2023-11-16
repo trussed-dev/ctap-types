@@ -129,6 +129,10 @@ fn test_de_order<T: Serialize + DeserializeOwned + Debug + PartialEq>(data: T) -
     }
 
     let mut fields = canonical_fields;
+    fields.insert(
+        2,
+        (Value::Integer(2.into()), Value::Text("foobar".to_owned())),
+    );
     fields.push((Value::Integer(42.into()), Value::Text("foobar".to_owned())));
     fields.push((Value::Integer(24.into()), Value::Text("foobar".to_owned())));
     let (deserialized, serialized) = deserialize_map::<T>(fields);
