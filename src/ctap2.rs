@@ -153,13 +153,7 @@ impl Response {
         let outcome = match self {
             GetInfo(response) => cbor_serialize(response, data),
             MakeCredential(response) => cbor_serialize(response, data),
-            ClientPin(response) => {
-                if response.is_empty() {
-                    Ok([].as_slice())
-                } else {
-                    cbor_serialize(response, data)
-                }
-            }
+            ClientPin(response) => cbor_serialize(response, data),
             GetAssertion(response) | GetNextAssertion(response) => cbor_serialize(response, data),
             CredentialManagement(response) => cbor_serialize(response, data),
             LargeBlobs(response) => cbor_serialize(response, data),
@@ -167,8 +161,13 @@ impl Response {
         };
         if let Ok(slice) = outcome {
             *status = 0;
-            let l = slice.len();
-            buffer.resize_default(l + 1).ok();
+            // Instead of an empty CBOR map (0xA0), we return an empty response
+            if slice == [0xA0] {
+                buffer.resize_default(1).ok();
+            } else {
+                let l = slice.len();
+                buffer.resize_default(l + 1).ok();
+            }
         } else {
             *status = Error::Other as u8;
             buffer.resize_default(1).ok();
