@@ -107,4 +107,7 @@ pub struct Response {
     // 0x0A
     #[serde(skip_serializing_if = "Option::is_none")]
     pub cred_protect: Option<CredentialProtectionPolicy>,
+    // 0x0B
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub large_blob_key: Option<Bytes<32>>,
 }
