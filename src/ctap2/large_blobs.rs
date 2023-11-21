@@ -25,9 +25,10 @@ pub struct Request<'a> {
     pub pin_uv_auth_protocol: Option<u32>,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
+#[derive(Clone, Debug, Default, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
 #[serde_indexed(offset = 1)]
 pub struct Response {
     // 0x01
-    pub config: Bytes<LARGE_BLOB_MAX_FRAGMENT_LENGTH>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub config: Option<Bytes<LARGE_BLOB_MAX_FRAGMENT_LENGTH>>,
 }

@@ -111,13 +111,14 @@ impl<'a> Request<'a> {
                 Request::ClientPin(cbor_deserialize(data).map_err(CtapMappingError::ParsingError)?)
             }
 
+            Operation::LargeBlobs => {
+                Request::LargeBlobs(cbor_deserialize(data).map_err(CtapMappingError::ParsingError)?)
+            }
+
             // NB: FIDO Alliance "stole" 0x40 and 0x41, so these are not available
             Operation::Vendor(vendor_operation) => Request::Vendor(vendor_operation),
 
-            Operation::BioEnrollment
-            | Operation::PreviewBioEnrollment
-            | Operation::Config
-            | Operation::LargeBlobs => {
+            Operation::BioEnrollment | Operation::PreviewBioEnrollment | Operation::Config => {
                 debug_now!("unhandled CBOR operation {:?}", operation);
                 return Err(CtapMappingError::InvalidCommand(op).into());
             }
