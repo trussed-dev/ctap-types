@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add support for the `largeBlobKey` extension ([#18][])
 - Remove `AuthenticatorDataFlags::EMPTY` (use `AuthenticatorDataFlags::empty()` instead)
 - Allow missing algorithms in COSE keys ([#8][])
+- Remove unused `REALISTIC_MAX_MESSAGE_SIZE` constant
 
 [#8]: https://github.com/trussed-dev/ctap-types/pull/8
 [#9]: https://github.com/solokeys/ctap-types/issues/9
