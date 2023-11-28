@@ -32,6 +32,9 @@ quickcheck = "1.0.3"
 serde = { version = "1" }
 
 [features]
+# enables support for implementing the large-blobs extension, see src/sizes.rs
+large-blobs = []
+
 log-all = ["cbor-smol/log-all"]
 log-none = []
 

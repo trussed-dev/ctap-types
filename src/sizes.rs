@@ -24,4 +24,13 @@ pub const THEORETICAL_MAX_MESSAGE_SIZE: usize = PACKET_SIZE - 7 + 128 * (PACKET_
 
 /// Max length for a large blob fragment, according to
 /// https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-20210615.html#largeBlobsRW
-pub const LARGE_BLOB_MAX_FRAGMENT_LENGTH: usize = 1200 - 64;
+///
+/// This constant determines the buffer size in [`ctap2::large_blobs::Response`][].  Ideally, this
+/// would be configurable.  Currently, this is not possible.  To keep the stack usage low if the
+/// extension is not used, this constant defaults to zero. For compatibility with the max message
+/// size in usbd-ctaphid (used by solo2 and nitrokey-3-firmware), it is set to 3072 - 64 =
+/// 3008 if the `large-blobs` feature is enabled.
+#[cfg(not(feature = "large-blobs"))]
+pub const LARGE_BLOB_MAX_FRAGMENT_LENGTH: usize = 0;
+#[cfg(feature = "large-blobs")]
+pub const LARGE_BLOB_MAX_FRAGMENT_LENGTH: usize = 3008;
