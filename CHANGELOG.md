@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove `AuthenticatorDataFlags::EMPTY` (use `AuthenticatorDataFlags::empty()` instead)
 - Allow missing algorithms in COSE keys ([#8][])
 - Remove unused `REALISTIC_MAX_MESSAGE_SIZE` constant
+- Handle overlong `icon` values in `PublicKeyCredentialUserEntity` ([#27][])
 
 [#8]: https://github.com/trussed-dev/ctap-types/pull/8
 [#9]: https://github.com/solokeys/ctap-types/issues/9
@@ -24,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#16]: https://github.com/trussed-dev/ctap-types/pull/16
 [#17]: https://github.com/trussed-dev/ctap-types/pull/17
 [#18]: https://github.com/trussed-dev/ctap-types/pull/18
+[#27]: https://github.com/trussed-dev/ctap-types/pull/27
 
 ## [0.1.2] - 2022-03-07
 

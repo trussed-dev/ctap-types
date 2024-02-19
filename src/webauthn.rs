@@ -71,8 +71,10 @@ fn deserialize_from_str_and_skip_if_too_long<'de, D, const L: usize>(
 where
     D: serde::Deserializer<'de>,
 {
-    let result: Result<String<L>, D::Error> = serde::Deserialize::deserialize(deserializer);
-    match result {
+    let s: &'de str = Deserialize::deserialize(deserializer)?;
+    // String::from(s) could panic and is not really infallibe.  It is removed in heapless 0.8.
+    #[allow(clippy::unnecessary_fallible_conversions)]
+    match String::try_from(s) {
         Ok(string) => Ok(Some(string)),
         Err(_err) => {
             info_now!("skipping field: {:?}", _err);
