@@ -37,4 +37,4 @@ log-none = []
 
 [patch.crates-io]
 # heapless = { git = "https://github.com/nickray/heapless", branch = "bytebuf-0.5.6" }
-serde-indexed = { git = "https://github.com/sosthene-nitrokey/serde-indexed.git", rev = "5005d23cb4ee8622e62188ea0f9466146f851f0d" }
+serde-indexed = { git = "https://github.com/trussed-dev/serde-indexed.git", rev = "d95cbe064ef0bfd0ce2d01582110e29fbc22afbd" }
