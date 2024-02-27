@@ -1,4 +1,5 @@
-use crate::Bytes;
+use crate::{Bytes, String};
+use bitflags::bitflags;
 use serde_indexed::{DeserializeIndexed, SerializeIndexed};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 
@@ -15,6 +16,18 @@ pub enum PinV1Subcommand {
     GetPinUvAuthTokenUsingUvWithPermissions = 0x06,
     GetUVRetries = 0x07,
     GetPinUvAuthTokenUsingPinWithPermissions = 0x09,
+}
+
+bitflags! {
+    #[derive(Default)]
+    pub struct Permissions: u8 {
+        const MAKE_CREDENTIAL = 0x01;
+        const GET_ASSERTION = 0x02;
+        const CREDENTIAL_MANAGEMENT = 0x04;
+        const BIO_ENROLLMENT = 0x08;
+        const LARGE_BLOB_WRITE = 0x10;
+        const AUTHENTICATOR_CONFIGURATION = 0x20;
+    }
 }
 
 // minimum PIN length: 4 unicode
@@ -55,9 +68,27 @@ pub struct Request {
     // Encrypted first 16 bytes of SHA-256 of PIN using `sharedSecret`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pin_hash_enc: Option<Bytes<80>>,
+
+    // 0x07
+    #[serde(skip_serializing_if = "Option::is_none")]
+    _placeholder07: Option<()>,
+
+    // 0x08
+    #[serde(skip_serializing_if = "Option::is_none")]
+    _placeholder08: Option<()>,
+
+    // 0x09
+    // Bitfield of permissions
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub permissions: Option<u8>,
+
+    // 0x0A
+    // The RP ID to assign as the permissions RP ID
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rp_id: Option<String<256>>,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
+#[derive(Clone, Debug, Default, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
 #[serde_indexed(offset = 1)]
 pub struct Response {
     // 0x01, like ClientPinParameters::key_agreement
@@ -71,6 +102,14 @@ pub struct Response {
     // 0x03, number of PIN attempts remaining before lockout
     #[serde(skip_serializing_if = "Option::is_none")]
     pub retries: Option<u8>,
+
+    // 0x04, whether a power cycle is required before any future PIN operation
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub power_cycle_state: Option<bool>,
+
+    // 0x05, number of uv attempts remaining before lockout
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub uv_retries: Option<u8>,
 }
 
 #[cfg(test)]

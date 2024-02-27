@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove unused `REALISTIC_MAX_MESSAGE_SIZE` constant
 - Handle overlong `icon` values in `PublicKeyCredentialUserEntity` ([#27][])
 - Update for compatibility with PIN protocol 2
+- Add support for permissions in `ctap2::client_pin`
 
 [#8]: https://github.com/trussed-dev/ctap-types/pull/8
 [#9]: https://github.com/solokeys/ctap-types/issues/9
