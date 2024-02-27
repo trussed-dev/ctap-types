@@ -35,6 +35,7 @@ pub enum Subcommand {
     EnumerateCredentialsBegin = 0x04,             // 6, 7, 8 ,9, A
     EnumerateCredentialsGetNextCredential = 0x05, // 6, 7, 8, A
     DeleteCredential = 0x06,                      // -
+    UpdateUserInformation = 0x07,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
@@ -46,6 +47,9 @@ pub struct SubcommandParameters {
     // 0x02
     #[serde(skip_serializing_if = "Option::is_none")]
     pub credential_id: Option<PublicKeyCredentialDescriptor>,
+    // 0x03
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub user: Option<PublicKeyCredentialUserEntity>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
