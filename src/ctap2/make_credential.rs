@@ -88,6 +88,8 @@ pub struct Request<'a> {
     pub pin_auth: Option<&'a serde_bytes::Bytes>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pin_protocol: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub enterprise_attestation: Option<u32>,
 }
 
 // It would be logical to call this Reponse :)
