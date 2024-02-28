@@ -33,7 +33,7 @@ pub struct Response {
 
     // 0x06
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub pin_protocols: Option<Vec<u8, 1>>,
+    pub pin_protocols: Option<Vec<u8, 2>>,
 
     // 0x07
     // FIDO_2_1
