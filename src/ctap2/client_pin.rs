@@ -43,18 +43,18 @@ pub struct Request {
     // First 16 bytes of HMAC-SHA-256 of encrypted contents
     // using `sharedSecret`.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub pin_auth: Option<Bytes<16>>,
+    pub pin_auth: Option<Bytes<256>>,
 
     // 0x05
     // Encrypted new PIN using `sharedSecret`.
     // (Encryption over UTF-8 representation of new PIN).
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub new_pin_enc: Option<Bytes<64>>,
+    pub new_pin_enc: Option<Bytes<80>>,
 
     // 0x06
     // Encrypted first 16 bytes of SHA-256 of PIN using `sharedSecret`.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub pin_hash_enc: Option<Bytes<64>>,
+    pub pin_hash_enc: Option<Bytes<80>>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
@@ -66,7 +66,7 @@ pub struct Response {
 
     // 0x02, encrypted `pinToken` using `sharedSecret`
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub pin_token: Option<Bytes<32>>,
+    pub pin_token: Option<Bytes<48>>,
 
     // 0x03, number of PIN attempts remaining before lockout
     #[serde(skip_serializing_if = "Option::is_none")]
