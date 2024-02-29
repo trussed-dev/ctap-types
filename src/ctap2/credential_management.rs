@@ -9,7 +9,6 @@ use crate::{
     Bytes,
 };
 
-type Bytes16 = Bytes<16>;
 type Bytes32 = Bytes<32>;
 
 #[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Serialize_repr, Deserialize_repr)]
@@ -61,7 +60,7 @@ pub struct Request {
     pub pin_protocol: Option<u8>,
     // 0x04
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub pin_auth: Option<Bytes16>,
+    pub pin_auth: Option<Bytes<256>>,
 }
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, SerializeIndexed)]

@@ -19,7 +19,7 @@ use crate::webauthn::*;
 pub struct HmacSecretInput {
     pub key_agreement: EcdhEsHkdf256PublicKey,
     // *either* enc(salt1) *or* enc(salt1 || salt2)
-    pub salt_enc: Bytes<64>,
+    pub salt_enc: Bytes<80>,
     pub salt_auth: Bytes<16>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pin_protocol: Option<u32>,
@@ -41,7 +41,7 @@ pub struct ExtensionsOutput {
     #[serde(rename = "hmac-secret")]
     #[serde(skip_serializing_if = "Option::is_none")]
     // *either* enc(output1) *or* enc(output1 || output2)
-    pub hmac_secret: Option<Bytes<64>>,
+    pub hmac_secret: Option<Bytes<80>>,
 }
 
 pub struct NoAttestedCredentialData(core::marker::PhantomData<()>);
