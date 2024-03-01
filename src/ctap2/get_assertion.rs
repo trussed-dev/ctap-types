@@ -20,7 +20,7 @@ pub struct HmacSecretInput {
     pub key_agreement: EcdhEsHkdf256PublicKey,
     // *either* enc(salt1) *or* enc(salt1 || salt2)
     pub salt_enc: Bytes<80>,
-    pub salt_auth: Bytes<16>,
+    pub salt_auth: Bytes<32>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pin_protocol: Option<u32>,
 }
