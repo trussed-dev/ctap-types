@@ -33,11 +33,11 @@ pub enum Request<'a> {
     // 0x4
     GetInfo,
     // 0x6
-    ClientPin(client_pin::Request),
+    ClientPin(client_pin::Request<'a>),
     // 0x7
     Reset,
     // 0xA
-    CredentialManagement(credential_management::Request),
+    CredentialManagement(credential_management::Request<'a>),
     // 0xB
     Selection,
     // 0xC
