@@ -4,7 +4,8 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 
 use crate::{
     webauthn::{
-        PublicKeyCredentialDescriptor, PublicKeyCredentialRpEntity, PublicKeyCredentialUserEntity,
+        PublicKeyCredentialDescriptor, PublicKeyCredentialDescriptorRef,
+        PublicKeyCredentialRpEntity, PublicKeyCredentialUserEntity,
     },
     Bytes,
 };
@@ -39,13 +40,13 @@ pub enum Subcommand {
 
 #[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
 #[serde_indexed(offset = 1)]
-pub struct SubcommandParameters {
+pub struct SubcommandParameters<'a> {
     // 0x01
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub rp_id_hash: Option<Bytes32>,
+    pub rp_id_hash: Option<&'a serde_bytes::Bytes>,
     // 0x02
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub credential_id: Option<PublicKeyCredentialDescriptor>,
+    pub credential_id: Option<PublicKeyCredentialDescriptorRef<'a>>,
     // 0x03
     #[serde(skip_serializing_if = "Option::is_none")]
     pub user: Option<PublicKeyCredentialUserEntity>,
@@ -53,18 +54,18 @@ pub struct SubcommandParameters {
 
 #[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
 #[serde_indexed(offset = 1)]
-pub struct Request {
+pub struct Request<'a> {
     // 0x01
     pub sub_command: Subcommand,
     // 0x02
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub sub_command_params: Option<SubcommandParameters>,
+    pub sub_command_params: Option<SubcommandParameters<'a>>,
     // 0x03
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pin_protocol: Option<u8>,
     // 0x04
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub pin_auth: Option<Bytes<256>>,
+    pub pin_auth: Option<&'a serde_bytes::Bytes>,
 }
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, SerializeIndexed)]

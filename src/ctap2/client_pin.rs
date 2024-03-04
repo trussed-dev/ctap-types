@@ -1,4 +1,4 @@
-use crate::{Bytes, String};
+use crate::Bytes;
 use bitflags::bitflags;
 use cosey::EcdhEsHkdf256PublicKey;
 use serde_indexed::{DeserializeIndexed, SerializeIndexed};
@@ -35,7 +35,7 @@ bitflags! {
 
 #[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
 #[serde_indexed(offset = 1)]
-pub struct Request {
+pub struct Request<'a> {
     // 0x01
     // PIN protocol version chosen by the client.
     // For this version of the spec, this SHALL be the number 1.
@@ -55,18 +55,18 @@ pub struct Request {
     // First 16 bytes of HMAC-SHA-256 of encrypted contents
     // using `sharedSecret`.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub pin_auth: Option<Bytes<256>>,
+    pub pin_auth: Option<&'a serde_bytes::Bytes>,
 
     // 0x05
     // Encrypted new PIN using `sharedSecret`.
     // (Encryption over UTF-8 representation of new PIN).
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub new_pin_enc: Option<Bytes<80>>,
+    pub new_pin_enc: Option<&'a serde_bytes::Bytes>,
 
     // 0x06
     // Encrypted first 16 bytes of SHA-256 of PIN using `sharedSecret`.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub pin_hash_enc: Option<Bytes<80>>,
+    pub pin_hash_enc: Option<&'a serde_bytes::Bytes>,
 
     // 0x07
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -84,7 +84,7 @@ pub struct Request {
     // 0x0A
     // The RP ID to assign as the permissions RP ID
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub rp_id: Option<String<256>>,
+    pub rp_id: Option<&'a str>,
 }
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
