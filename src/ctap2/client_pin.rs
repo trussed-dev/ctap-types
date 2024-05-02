@@ -1,9 +1,8 @@
 use crate::{Bytes, String};
 use bitflags::bitflags;
+use cosey::EcdhEsHkdf256PublicKey;
 use serde_indexed::{DeserializeIndexed, SerializeIndexed};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-
-use crate::cose::EcdhEsHkdf256PublicKey;
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize_repr, Deserialize_repr)]
 #[repr(u8)]

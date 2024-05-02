@@ -25,7 +25,6 @@ pub use heapless_bytes;
 pub use heapless_bytes::Bytes;
 
 pub mod authenticator;
-pub mod cose;
 pub mod ctap1;
 pub mod ctap2;
 pub(crate) mod operation;

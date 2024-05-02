@@ -59,7 +59,7 @@ pub mod register {
     impl Response {
         pub fn new(
             header_byte: u8,
-            public_key: &crate::cose::EcdhEsHkdf256PublicKey,
+            public_key: &cosey::EcdhEsHkdf256PublicKey,
             key_handle: &[u8],
             signature: Bytes<72>,
             attestation_certificate: &[u8],

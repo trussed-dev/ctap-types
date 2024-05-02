@@ -1,8 +1,8 @@
+use cosey::PublicKey;
 use serde_indexed::{DeserializeIndexed, SerializeIndexed};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 
 use crate::{
-    cose::PublicKey,
     webauthn::{
         PublicKeyCredentialDescriptor, PublicKeyCredentialRpEntity, PublicKeyCredentialUserEntity,
     },

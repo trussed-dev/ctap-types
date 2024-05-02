@@ -12,6 +12,7 @@ homepage = "https://github.com/solokeys/ctap-types"
 [dependencies]
 bitflags = "1.3"
 cbor-smol = "0.4"
+cosey = "0.3"
 delog = "0.1"
 heapless = { version = "0.7", default-features = false, features = ["serde"] }
 heapless-bytes = "0.3"
@@ -20,13 +21,6 @@ serde = { version = "1", default-features = false, features = ["derive"] }
 serde-indexed = "0.1"
 serde_bytes = { version = "0.11.12", default-features = false }
 serde_repr = "0.1"
-
-[dev-dependencies]
-ciborium = "0.2.1"
-hex = "0.4.3"
-itertools = "0.12.0"
-quickcheck = "1.0.3"
-serde = { version = "1" }
 
 [features]
 # enables support for implementing the large-blobs extension, see src/sizes.rs

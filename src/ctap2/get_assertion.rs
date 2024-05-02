@@ -1,9 +1,9 @@
 use crate::{Bytes, String, Vec};
+use cosey::EcdhEsHkdf256PublicKey;
 use serde::{Deserialize, Serialize};
 use serde_indexed::{DeserializeIndexed, SerializeIndexed};
 
 use super::AuthenticatorOptions;
-use crate::cose::EcdhEsHkdf256PublicKey;
 use crate::sizes::*;
 use crate::webauthn::*;
 
