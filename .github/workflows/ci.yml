@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   build:
-    name: Build library
+    name: Check library
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
@@ -13,8 +13,11 @@ jobs:
         profile: minimal
         toolchain: stable
         override: true
-    - name: Build library
-      run: cargo build
+    - name: Check library
+      run: |
+        cargo check
+        cargo check --features large-blobs
+        cargo check --all-features
 
   test:
     name: Run tests
