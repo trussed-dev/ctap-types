@@ -21,7 +21,8 @@ impl TryFrom<u8> for CredentialProtectionPolicy {
     }
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct Extensions {
     #[serde(rename = "credProtect")]
     #[serde(skip_serializing_if = "Option::is_none")]

@@ -18,7 +18,8 @@ pub struct HmacSecretInput {
     pub pin_protocol: Option<u32>,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct ExtensionsInput {
     #[serde(rename = "hmac-secret")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -29,7 +30,8 @@ pub struct ExtensionsInput {
     pub large_blob_key: Option<bool>,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, Default)]
+#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct ExtensionsOutput {
     #[serde(rename = "hmac-secret")]
     #[serde(skip_serializing_if = "Option::is_none")]
