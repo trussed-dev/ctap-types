@@ -6,10 +6,6 @@ use crate::ctap2;
 pub use ctap1::Authenticator as Ctap1Authenticator;
 pub use ctap2::Authenticator as Ctap2Authenticator;
 
-// pub trait Authenticator {
-//     fn process(&mut self, request: &mut Request) -> Result<Response, Error>;
-// }
-
 #[derive(Clone, Debug, PartialEq)]
 // clippy says (2022-02-26): large size difference
 // - first is 88 bytes
@@ -31,15 +27,6 @@ pub enum Response {
 }
 
 /// Authenticator which supports both CTAP1 and CTAP2.
-pub trait Authenticator: ctap1::Authenticator + ctap2::Authenticator {
-    // fn call(&mut self, request: &Request) -> Result<Response> {
-    //     Ok(match request {
-    //         Request::Ctap1(request) => Response::Ctap1(self.call_ctap1(request)?),
-    //         Request::Ctap2(request) => Response::Ctap2(self.call_ctap2(request)?),
-    //     })
-    // }
-}
+pub trait Authenticator: ctap1::Authenticator + ctap2::Authenticator {}
 
 impl<A: ctap1::Authenticator + ctap2::Authenticator> Authenticator for A {}
-
-// pub type Result<T> = core::result::Result<T, Error>;

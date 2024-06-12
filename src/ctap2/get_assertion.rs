@@ -7,13 +7,6 @@ use super::AuthenticatorOptions;
 use crate::sizes::*;
 use crate::webauthn::*;
 
-// #[derive(Clone,Debug,Eq,PartialEq,Serialize,Deserialize)]
-// pub struct AuthenticatorExtensions {
-//     #[serde(rename = "hmac-secret")]
-//     #[serde(skip_serializing_if = "Option::is_none")]
-//     pub hmac_secret: Option<bool>,
-// }
-
 #[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
 #[serde_indexed(offset = 1)]
 pub struct HmacSecretInput {
@@ -57,7 +50,6 @@ pub type AuthenticatorData = super::AuthenticatorData<NoAttestedCredentialData, 
 pub type AllowList<'a> = Vec<PublicKeyCredentialDescriptorRef<'a>, MAX_CREDENTIAL_COUNT_IN_LIST>;
 
 #[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
-// #[serde(rename_all = "camelCase")]
 #[serde_indexed(offset = 1)]
 pub struct Request<'a> {
     pub rp_id: String<64>,
@@ -95,5 +87,3 @@ pub struct Response {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub large_blob_key: Option<Bytes<32>>,
 }
-
-pub type Responses = Vec<Response, 8>;

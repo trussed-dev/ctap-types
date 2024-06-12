@@ -16,10 +16,6 @@ pub struct Response {
     pub extensions: Option<Vec<String<13>, 4>>,
 
     // 0x03
-    // #[serde(with = "serde_bytes")]
-    // #[serde(serialize_with = "serde_bytes::serialize", deserialize_with = "serde_bytes::deserialize")]
-    // #[serde(serialize_with = "serde_bytes::serialize")]
-    // pub(crate) aaguid: Vec<u8, 16>,
     pub aaguid: Bytes<16>,
 
     // 0x04
@@ -27,7 +23,6 @@ pub struct Response {
     pub options: Option<CtapOptions>,
 
     // 0x05
-    // TODO: this is actually the constant MESSAGE_SIZE
     #[serde(skip_serializing_if = "Option::is_none")]
     pub max_msg_size: Option<usize>,
 
@@ -54,8 +49,6 @@ pub struct Response {
     // FIDO_2_1
     #[serde(skip_serializing_if = "Option::is_none")]
     pub algorithms: Option<FilteredPublicKeyCredentialParameters>,
-    // #[serde(skip_serializing_if = "Option::is_none")]
-    // pub(crate) algorithms: Option<&'l[u8]>,
 
     // 0x0B
     // FIDO_2_1

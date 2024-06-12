@@ -7,8 +7,6 @@ license = "Apache-2.0 OR MIT"
 description = "no_std friendly types for FIDO CTAP"
 homepage = "https://github.com/solokeys/ctap-types"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 bitflags = "1.3"
 cbor-smol = "0.4"
@@ -30,5 +28,4 @@ log-all = ["cbor-smol/log-all"]
 log-none = []
 
 [patch.crates-io]
-# heapless = { git = "https://github.com/nickray/heapless", branch = "bytebuf-0.5.6" }
 serde-indexed = { git = "https://github.com/trussed-dev/serde-indexed.git", rev = "d95cbe064ef0bfd0ce2d01582110e29fbc22afbd" }

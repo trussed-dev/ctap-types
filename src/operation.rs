@@ -61,7 +61,6 @@ impl TryFrom<u8> for VendorOperation {
 
     fn try_from(from: u8) -> core::result::Result<Self, ()> {
         match from {
-            // code if code >= Self::FIRST && code <= Self::LAST => Ok(VendorOperation(code)),
             code @ Self::FIRST..=Self::LAST => Ok(VendorOperation(code)),
             _ => Err(()),
         }

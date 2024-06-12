@@ -13,28 +13,23 @@ use crate::{
 type Bytes32 = Bytes<32>;
 
 #[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Serialize_repr, Deserialize_repr)]
-// #[derive(Clone,Debug,Eq,PartialEq,Serialize, Deserialize)]
-// #[serde(tag = "credProtect")]
 #[repr(u8)]
 pub enum CredentialProtectionPolicy {
-    // #[serde(rename = "userVerificationOptional")]
     #[default]
     Optional = 1,
-    // #[serde(rename = "userVerificationOptionalWithCredentialIDList")] // <-- len = 44
     OptionalWithCredentialIdList = 2,
-    // #[serde(rename = "userVerificationRequired")]
     Required = 3,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize_repr, Deserialize_repr)]
 #[repr(u8)]
 pub enum Subcommand {
-    GetCredsMetadata = 0x01,                      // 1, 2
-    EnumerateRpsBegin = 0x02,                     // 3, 4, 5
-    EnumerateRpsGetNextRp = 0x03,                 //  3, 4
-    EnumerateCredentialsBegin = 0x04,             // 6, 7, 8 ,9, A
-    EnumerateCredentialsGetNextCredential = 0x05, // 6, 7, 8, A
-    DeleteCredential = 0x06,                      // -
+    GetCredsMetadata = 0x01,
+    EnumerateRpsBegin = 0x02,
+    EnumerateRpsGetNextRp = 0x03,
+    EnumerateCredentialsBegin = 0x04,
+    EnumerateCredentialsGetNextCredential = 0x05,
+    DeleteCredential = 0x06,
     UpdateUserInformation = 0x07,
 }
 
@@ -70,7 +65,6 @@ pub struct Request<'a> {
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, SerializeIndexed)]
 #[serde_indexed(offset = 1)]
-// #[derive(Clone,Debug, Default,Eq,PartialEq,Serialize,Deserialize)]
 pub struct Response {
     // Metadata
 
@@ -104,7 +98,6 @@ pub struct Response {
     // 0x08
     #[serde(skip_serializing_if = "Option::is_none")]
     pub public_key: Option<PublicKey>,
-    // pub public_key: Option<Bytes<COSE_KEY_LENGTH>>,  // <-- AAAAHH. no Bytes, just COSE_Key
     // 0x09
     #[serde(skip_serializing_if = "Option::is_none")]
     pub total_credentials: Option<u32>,

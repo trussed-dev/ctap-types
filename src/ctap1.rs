@@ -26,16 +26,6 @@ pub mod authenticate {
         pub count: u32,
         pub signature: Bytes<72>,
     }
-
-    // impl AuthenticateResponse {
-    //     pub fn new(user_presence: u8, count: u32, signature: Bytes<72>) -> Self {
-    //         Self {
-    //             user_presence,
-    //             count,
-    //             signature,
-    //         }
-    //     }
-    // }
 }
 
 pub mod register {
