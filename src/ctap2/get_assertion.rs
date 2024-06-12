@@ -27,10 +27,16 @@ pub struct ExtensionsInput {
     #[serde(rename = "hmac-secret")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub hmac_secret: Option<HmacSecretInput>,
+
     /// Whether a large blob key is requested.
     #[serde(rename = "largeBlobKey")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub large_blob_key: Option<bool>,
+
+    #[cfg(feature = "third-party-payment")]
+    #[serde(rename = "thirdPartyPayment")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub third_party_payment: Option<bool>,
 }
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
@@ -40,6 +46,30 @@ pub struct ExtensionsOutput {
     #[serde(skip_serializing_if = "Option::is_none")]
     // *either* enc(output1) *or* enc(output1 || output2)
     pub hmac_secret: Option<Bytes<80>>,
+
+    #[cfg(feature = "third-party-payment")]
+    #[serde(rename = "thirdPartyPayment")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub third_party_payment: Option<bool>,
+}
+
+impl ExtensionsOutput {
+    #[inline]
+    pub fn is_set(&self) -> bool {
+        let Self {
+            hmac_secret,
+            #[cfg(feature = "third-party-payment")]
+            third_party_payment,
+        } = self;
+        if hmac_secret.is_some() {
+            return true;
+        }
+        #[cfg(feature = "third-party-payment")]
+        if third_party_payment.is_some() {
+            return true;
+        }
+        false
+    }
 }
 
 pub struct NoAttestedCredentialData;

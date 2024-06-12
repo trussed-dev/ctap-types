@@ -29,13 +29,20 @@ pub struct Extensions {
     #[serde(rename = "credProtect")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub cred_protect: Option<u8>,
+
     #[serde(rename = "hmac-secret")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub hmac_secret: Option<bool>,
+
     // See https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-20210615.html#sctn-largeBlobKey-extension
     #[serde(rename = "largeBlobKey")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub large_blob_key: Option<bool>,
+
+    #[cfg(feature = "third-party-payment")]
+    #[serde(rename = "thirdPartyPayment")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub third_party_payment: Option<bool>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]

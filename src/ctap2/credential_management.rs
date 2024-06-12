@@ -108,4 +108,8 @@ pub struct Response {
     // 0x0B
     #[serde(skip_serializing_if = "Option::is_none")]
     pub large_blob_key: Option<ByteArray<32>>,
+    // 0x0C
+    #[cfg(feature = "third-party-payment")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub third_party_payment: Option<bool>,
 }

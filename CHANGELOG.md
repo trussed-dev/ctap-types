@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add a `std` feature (disabled by default)
 - Add `arbitrary::Arbitrary` implementations for all requests behind an `arbitrary` feature (disabled by default)
+- Add support for the `thirdPartyPayment` extension behind a `third-party-payment` feature (disabled by default)
 
 ## [0.2.0] - 2024-06-21
 

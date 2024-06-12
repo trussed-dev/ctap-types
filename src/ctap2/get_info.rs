@@ -227,12 +227,14 @@ pub enum Extension {
     CredProtect,
     HmacSecret,
     LargeBlobKey,
+    ThirdPartyPayment,
 }
 
 impl Extension {
     const CRED_PROTECT: &'static str = "credProtect";
     const HMAC_SECRET: &'static str = "hmac-secret";
     const LARGE_BLOB_KEY: &'static str = "largeBlobKey";
+    const THIRD_PARTY_PAYMENT: &'static str = "thirdPartyPayment";
 }
 
 impl From<Extension> for &str {
@@ -241,6 +243,7 @@ impl From<Extension> for &str {
             Extension::CredProtect => Extension::CRED_PROTECT,
             Extension::HmacSecret => Extension::HMAC_SECRET,
             Extension::LargeBlobKey => Extension::LARGE_BLOB_KEY,
+            Extension::ThirdPartyPayment => Extension::THIRD_PARTY_PAYMENT,
         }
     }
 }
@@ -253,6 +256,7 @@ impl TryFrom<&str> for Extension {
             Self::CRED_PROTECT => Ok(Self::CredProtect),
             Self::HMAC_SECRET => Ok(Self::HmacSecret),
             Self::LARGE_BLOB_KEY => Ok(Self::LargeBlobKey),
+            Self::THIRD_PARTY_PAYMENT => Ok(Self::ThirdPartyPayment),
             _ => Err(TryFromStrError),
         }
     }

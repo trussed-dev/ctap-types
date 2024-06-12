@@ -34,6 +34,7 @@ arbitrary = ["dep:arbitrary", "std"]
 get-info-full = []
 # enables support for implementing the large-blobs extension, see src/sizes.rs
 large-blobs = []
+third-party-payment = []
 
 log-all = []
 log-none = []
