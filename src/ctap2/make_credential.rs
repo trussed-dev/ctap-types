@@ -37,6 +37,7 @@ pub struct Extensions {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
+#[non_exhaustive]
 #[serde_indexed(offset = 1)]
 pub struct Request<'a> {
     pub client_data_hash: &'a serde_bytes::Bytes,
@@ -102,6 +103,7 @@ impl super::SerializeAttestedCredentialData for AttestedCredentialData {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed)]
+#[non_exhaustive]
 #[serde_indexed(offset = 1)]
 pub struct Response {
     pub fmt: String<32>,
@@ -113,7 +115,28 @@ pub struct Response {
     pub large_blob_key: Option<Bytes<32>>,
 }
 
+#[derive(Debug)]
+pub struct ResponseBuilder {
+    pub fmt: String<32>,
+    pub auth_data: super::SerializedAuthenticatorData,
+    pub att_stmt: AttestationStatement,
+}
+
+impl ResponseBuilder {
+    #[inline(always)]
+    pub fn build(self) -> Response {
+        Response {
+            fmt: self.fmt,
+            auth_data: self.auth_data,
+            att_stmt: self.att_stmt,
+            ep_att: None,
+            large_blob_key: None,
+        }
+    }
+}
+
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+#[non_exhaustive]
 #[serde(untagged)]
 #[allow(clippy::large_enum_variant)]
 pub enum AttestationStatement {
@@ -122,6 +145,7 @@ pub enum AttestationStatement {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+#[non_exhaustive]
 #[serde(untagged)]
 pub enum AttestationStatementFormat {
     None,

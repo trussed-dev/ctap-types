@@ -4,6 +4,7 @@ use serde_indexed::{DeserializeIndexed, SerializeIndexed};
 
 // See: https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-20210615.html#largeBlobsRW
 #[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
+#[non_exhaustive]
 #[serde_indexed(offset = 1)]
 pub struct Request<'a> {
     // 0x01
@@ -26,6 +27,7 @@ pub struct Request<'a> {
 }
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
+#[non_exhaustive]
 #[serde_indexed(offset = 1)]
 pub struct Response {
     // 0x01

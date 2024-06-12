@@ -22,6 +22,7 @@ pub enum CredentialProtectionPolicy {
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize_repr, Deserialize_repr)]
+#[non_exhaustive]
 #[repr(u8)]
 pub enum Subcommand {
     GetCredsMetadata = 0x01,
@@ -34,6 +35,7 @@ pub enum Subcommand {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
+#[non_exhaustive]
 #[serde_indexed(offset = 1)]
 pub struct SubcommandParameters<'a> {
     // 0x01
@@ -48,6 +50,7 @@ pub struct SubcommandParameters<'a> {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
+#[non_exhaustive]
 #[serde_indexed(offset = 1)]
 pub struct Request<'a> {
     // 0x01
@@ -64,6 +67,7 @@ pub struct Request<'a> {
 }
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, SerializeIndexed)]
+#[non_exhaustive]
 #[serde_indexed(offset = 1)]
 pub struct Response {
     // Metadata

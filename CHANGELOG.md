@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add support for permissions in `ctap2::client_pin`
 - Replace `cose` module with `cosey` dependency ([#36][])
 - Mark `get_assertion::{ExtensionsInput, ExtensionsOutput}` and `make_credential::Extensions` as non-exhaustive and implement `Default`
+- Mark CTAP2 request and response types as non-exhaustive where possible
 
 [#8]: https://github.com/trussed-dev/ctap-types/pull/8
 [#9]: https://github.com/solokeys/ctap-types/issues/9

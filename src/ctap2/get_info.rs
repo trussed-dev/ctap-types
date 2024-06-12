@@ -6,6 +6,7 @@ use serde_indexed::{DeserializeIndexed, SerializeIndexed};
 pub type AuthenticatorInfo = Response;
 
 #[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
+#[non_exhaustive]
 #[serde_indexed(offset = 1)]
 pub struct Response {
     // 0x01
@@ -78,7 +79,33 @@ impl Default for Response {
     }
 }
 
+#[derive(Debug)]
+pub struct ResponseBuilder {
+    pub versions: Vec<String<12>, 4>,
+    pub aaguid: Bytes<16>,
+}
+
+impl ResponseBuilder {
+    #[inline(always)]
+    pub fn build(self) -> Response {
+        Response {
+            versions: self.versions,
+            aaguid: self.aaguid,
+            extensions: None,
+            options: None,
+            max_msg_size: None,
+            pin_protocols: None,
+            max_creds_in_list: None,
+            max_cred_id_length: None,
+            transports: None,
+            algorithms: None,
+            max_serialized_large_blob_array: None,
+        }
+    }
+}
+
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[non_exhaustive]
 #[serde(rename_all = "camelCase")]
 pub struct CtapOptions {
     #[serde(skip_serializing_if = "Option::is_none")]

@@ -8,6 +8,7 @@ use crate::sizes::*;
 use crate::webauthn::*;
 
 #[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
+#[non_exhaustive]
 #[serde_indexed(offset = 1)]
 pub struct HmacSecretInput {
     pub key_agreement: EcdhEsHkdf256PublicKey,
@@ -52,6 +53,7 @@ pub type AuthenticatorData = super::AuthenticatorData<NoAttestedCredentialData, 
 pub type AllowList<'a> = Vec<PublicKeyCredentialDescriptorRef<'a>, MAX_CREDENTIAL_COUNT_IN_LIST>;
 
 #[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
+#[non_exhaustive]
 #[serde_indexed(offset = 1)]
 pub struct Request<'a> {
     pub rp_id: String<64>,
@@ -72,10 +74,10 @@ pub struct Request<'a> {
 // https://fidoalliance.org/specs/fido-v2.0-ps-20190130/fido-client-to-authenticator-protocol-v2.0-ps-20190130.html#authenticatorMakeCredential
 // does not coincide with what python-fido2 expects in AttestationObject.__init__ *at all* :'-)
 #[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
+#[non_exhaustive]
 #[serde_indexed(offset = 1)]
 pub struct Response {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub credential: Option<PublicKeyCredentialDescriptor>,
+    pub credential: PublicKeyCredentialDescriptor,
     pub auth_data: Bytes<AUTHENTICATOR_DATA_LENGTH>,
     pub signature: Bytes<ASN1_SIGNATURE_LENGTH>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -88,4 +90,26 @@ pub struct Response {
     /// See https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-20210615.html#sctn-getAssert-authnr-alg
     #[serde(skip_serializing_if = "Option::is_none")]
     pub large_blob_key: Option<Bytes<32>>,
+}
+
+#[derive(Debug)]
+pub struct ResponseBuilder {
+    pub credential: PublicKeyCredentialDescriptor,
+    pub auth_data: Bytes<AUTHENTICATOR_DATA_LENGTH>,
+    pub signature: Bytes<ASN1_SIGNATURE_LENGTH>,
+}
+
+impl ResponseBuilder {
+    #[inline(always)]
+    pub fn build(self) -> Response {
+        Response {
+            credential: self.credential,
+            auth_data: self.auth_data,
+            signature: self.signature,
+            user: None,
+            number_of_credentials: None,
+            user_selected: None,
+            large_blob_key: None,
+        }
+    }
 }

@@ -5,6 +5,7 @@ use serde_indexed::{DeserializeIndexed, SerializeIndexed};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize_repr, Deserialize_repr)]
+#[non_exhaustive]
 #[repr(u8)]
 pub enum PinV1Subcommand {
     GetRetries = 0x01,
@@ -34,6 +35,7 @@ bitflags! {
 // maximum consecutive incorrect PIN attempts: 8
 
 #[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
+#[non_exhaustive]
 #[serde_indexed(offset = 1)]
 pub struct Request<'a> {
     // 0x01
@@ -88,6 +90,7 @@ pub struct Request<'a> {
 }
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
+#[non_exhaustive]
 #[serde_indexed(offset = 1)]
 pub struct Response {
     // 0x01, like ClientPinParameters::key_agreement

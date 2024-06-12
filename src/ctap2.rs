@@ -20,6 +20,7 @@ pub mod make_credential;
 pub type Result<T> = core::result::Result<T, Error>;
 
 #[derive(Clone, Debug, PartialEq)]
+#[non_exhaustive]
 #[allow(clippy::large_enum_variant)]
 // clippy says...large size difference
 /// Enum of all CTAP2 requests.
@@ -127,6 +128,7 @@ impl<'a> Request<'a> {
 }
 
 #[derive(Clone, Debug, PartialEq)]
+#[non_exhaustive]
 /// Enum of all CTAP2 responses.
 #[allow(clippy::large_enum_variant)]
 pub enum Response {
@@ -176,6 +178,7 @@ impl Response {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct AuthenticatorOptions {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub rk: Option<bool>,
@@ -247,6 +250,7 @@ impl<A: SerializeAttestedCredentialData, E: serde::Serialize> AuthenticatorData<
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[non_exhaustive]
 pub enum Error {
     Success = 0x00,
     InvalidCommand = 0x01,
