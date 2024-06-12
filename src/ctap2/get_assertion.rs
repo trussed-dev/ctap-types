@@ -1,9 +1,9 @@
-use crate::{Bytes, String, Vec};
+use crate::{Bytes, Vec};
 use cosey::EcdhEsHkdf256PublicKey;
 use serde::{Deserialize, Serialize};
 use serde_indexed::{DeserializeIndexed, SerializeIndexed};
 
-use super::AuthenticatorOptions;
+use super::{AuthenticatorOptions, Result};
 use crate::sizes::*;
 use crate::webauthn::*;
 
@@ -40,15 +40,16 @@ pub struct ExtensionsOutput {
     pub hmac_secret: Option<Bytes<80>>,
 }
 
-pub struct NoAttestedCredentialData(core::marker::PhantomData<()>);
+pub struct NoAttestedCredentialData;
 
 impl super::SerializeAttestedCredentialData for NoAttestedCredentialData {
-    fn serialize(&self) -> Bytes<ATTESTED_CREDENTIAL_DATA_LENGTH> {
-        Bytes::new()
+    fn serialize(&self, _buffer: &mut super::SerializedAuthenticatorData) -> Result<()> {
+        Ok(())
     }
 }
 
-pub type AuthenticatorData = super::AuthenticatorData<NoAttestedCredentialData, ExtensionsOutput>;
+pub type AuthenticatorData<'a> =
+    super::AuthenticatorData<'a, NoAttestedCredentialData, ExtensionsOutput>;
 
 pub type AllowList<'a> = Vec<PublicKeyCredentialDescriptorRef<'a>, MAX_CREDENTIAL_COUNT_IN_LIST>;
 
@@ -56,8 +57,8 @@ pub type AllowList<'a> = Vec<PublicKeyCredentialDescriptorRef<'a>, MAX_CREDENTIA
 #[non_exhaustive]
 #[serde_indexed(offset = 1)]
 pub struct Request<'a> {
-    pub rp_id: String<64>,
-    pub client_data_hash: Bytes<32>,
+    pub rp_id: &'a str,
+    pub client_data_hash: &'a serde_bytes::Bytes,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub allow_list: Option<AllowList<'a>>,
     #[serde(skip_serializing_if = "Option::is_none")]

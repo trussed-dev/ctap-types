@@ -1,7 +1,3 @@
-pub const ATTESTED_CREDENTIAL_DATA_LENGTH: usize = 612;
-// // not sure why i can't use `::to_usize()` here?
-// pub const ATTESTED_CREDENTIAL_DATA_LENGTH_BYTES: usize = 512;
-
 pub const AUTHENTICATOR_DATA_LENGTH: usize = 676;
 // pub const AUTHENTICATOR_DATA_LENGTH_BYTES: usize = 512;
 

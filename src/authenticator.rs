@@ -12,7 +12,7 @@ pub use ctap2::Authenticator as Ctap2Authenticator;
 // - second is 10456 bytes
 #[allow(clippy::large_enum_variant)]
 pub enum Request<'a> {
-    Ctap1(ctap1::Request),
+    Ctap1(ctap1::Request<'a>),
     Ctap2(ctap2::Request<'a>),
 }
 

@@ -3,7 +3,7 @@ use crate::{Bytes, String, Vec};
 use serde::{Deserialize, Serialize};
 use serde_indexed::{DeserializeIndexed, SerializeIndexed};
 
-use super::AuthenticatorOptions;
+use super::{AuthenticatorOptions, Error};
 use crate::ctap2::credential_management::CredentialProtectionPolicy;
 use crate::sizes::*;
 use crate::webauthn::*;
@@ -60,45 +60,41 @@ pub struct Request<'a> {
 
 pub type AttestationObject = Response;
 
-pub type AuthenticatorData = super::AuthenticatorData<AttestedCredentialData, Extensions>;
+pub type AuthenticatorData<'a> =
+    super::AuthenticatorData<'a, AttestedCredentialData<'a>, Extensions>;
 
 // NOTE: This is not CBOR, it has a custom encoding...
 // https://www.w3.org/TR/webauthn/#sec-attested-credential-data
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct AttestedCredentialData {
-    pub aaguid: Bytes<16>,
+pub struct AttestedCredentialData<'a> {
+    pub aaguid: &'a [u8],
     // this is where "unlimited non-resident keys" get stored
     // TODO: Model as actual credential ID, with ser/de to bytes (format is up to authenticator)
-    pub credential_id: Bytes<MAX_CREDENTIAL_ID_LENGTH>,
-    pub credential_public_key: Bytes<COSE_KEY_LENGTH>,
+    pub credential_id: &'a [u8],
+    pub credential_public_key: &'a [u8],
 }
 
-impl super::SerializeAttestedCredentialData for AttestedCredentialData {
-    fn serialize(&self) -> Bytes<ATTESTED_CREDENTIAL_DATA_LENGTH> {
-        let mut bytes = Vec::<u8, ATTESTED_CREDENTIAL_DATA_LENGTH>::new();
+impl<'a> super::SerializeAttestedCredentialData for AttestedCredentialData<'a> {
+    fn serialize(&self, buffer: &mut super::SerializedAuthenticatorData) -> Result<(), Error> {
+        // TODO: validate lengths of credential ID and credential public key
         // 16 bytes, the aaguid
-        bytes.extend_from_slice(&self.aaguid).unwrap();
-
+        buffer
+            .extend_from_slice(self.aaguid)
+            .map_err(|_| Error::Other)?;
         // byte length of credential ID as 16-bit unsigned big-endian integer.
-        bytes
-            .extend_from_slice(&(self.credential_id.len() as u16).to_be_bytes())
-            .unwrap();
+        let credential_id_len =
+            u16::try_from(self.credential_id.len()).map_err(|_| Error::Other)?;
+        buffer
+            .extend_from_slice(&credential_id_len.to_be_bytes())
+            .map_err(|_| Error::Other)?;
         // raw bytes of credential ID
-        bytes
-            .extend_from_slice(&self.credential_id[..self.credential_id.len()])
-            .unwrap();
-
-        // use existing `bytes` buffer
-        // let mut cbor_key = [0u8; 128];
-
-        // CHANGE this back if credential_public_key is not serialized again
-        // let l = crate::serde::cbor_serialize(&self.credential_public_key, &mut cbor_key).unwrap();
-        // bytes.extend_from_slice(&cbor_key[..l]).unwrap();
-        bytes
-            .extend_from_slice(&self.credential_public_key)
-            .unwrap();
-
-        Bytes::from(bytes)
+        buffer
+            .extend_from_slice(self.credential_id)
+            .map_err(|_| Error::Other)?;
+        buffer
+            .extend_from_slice(self.credential_public_key)
+            .map_err(|_| Error::Other)?;
+        Ok(())
     }
 }
 

@@ -13,11 +13,11 @@ pub mod authenticate {
     use super::{Bytes, ControlByte};
 
     #[derive(Clone, Debug, Eq, PartialEq)]
-    pub struct Request {
+    pub struct Request<'a> {
         pub control_byte: ControlByte,
-        pub challenge: Bytes<32>,
-        pub app_id: Bytes<32>,
-        pub key_handle: Bytes<255>,
+        pub challenge: &'a [u8],
+        pub app_id: &'a [u8],
+        pub key_handle: &'a [u8],
     }
 
     #[derive(Clone, Debug, Eq, PartialEq)]
@@ -32,9 +32,9 @@ pub mod register {
     use super::Bytes;
 
     #[derive(Clone, Debug, Eq, PartialEq)]
-    pub struct Request {
-        pub challenge: Bytes<32>,
-        pub app_id: Bytes<32>,
+    pub struct Request<'a> {
+        pub challenge: &'a [u8],
+        pub app_id: &'a [u8],
     }
 
     #[derive(Clone, Debug, Eq, PartialEq)]
@@ -112,9 +112,9 @@ impl TryFrom<u8> for ControlByte {
 pub type Result<T> = core::result::Result<T, Error>;
 
 /// Type alias for convenience.
-pub type Register = register::Request;
+pub type Register<'a> = register::Request<'a>;
 /// Type alias for convenience.
-pub type Authenticate = authenticate::Request;
+pub type Authenticate<'a> = authenticate::Request<'a>;
 
 /// Type alias for convenience.
 pub type RegisterResponse = register::Response;
@@ -124,9 +124,9 @@ pub type AuthenticateResponse = authenticate::Response;
 #[derive(Clone, Debug, Eq, PartialEq)]
 #[allow(clippy::large_enum_variant)]
 /// Enum of all CTAP1 requests.
-pub enum Request {
-    Register(register::Request),
-    Authenticate(authenticate::Request),
+pub enum Request<'a> {
+    Register(register::Request<'a>),
+    Authenticate(authenticate::Request<'a>),
     Version,
 }
 
@@ -165,10 +165,10 @@ impl Response {
     }
 }
 
-impl<const S: usize> TryFrom<&iso7816::Command<S>> for Request {
+impl<'a, const S: usize> TryFrom<&'a iso7816::Command<S>> for Request<'a> {
     type Error = Error;
     #[inline(never)]
-    fn try_from(apdu: &iso7816::Command<S>) -> Result<Request> {
+    fn try_from(apdu: &'a iso7816::Command<S>) -> Result<Request> {
         let cla = apdu.class().into_inner();
         let ins = match apdu.instruction() {
             iso7816::Instruction::Unknown(ins) => ins,
@@ -196,8 +196,8 @@ impl<const S: usize> TryFrom<&iso7816::Command<S>> for Request {
                     return Err(Error::IncorrectDataParameter);
                 }
                 Ok(Request::Register(Register {
-                    challenge: Bytes::from_slice(&request[..32]).unwrap(),
-                    app_id: Bytes::from_slice(&request[32..]).unwrap(),
+                    challenge: &request[..32],
+                    app_id: &request[32..],
                 }))
             }
 
@@ -213,9 +213,9 @@ impl<const S: usize> TryFrom<&iso7816::Command<S>> for Request {
                 }
                 Ok(Request::Authenticate(Authenticate {
                     control_byte,
-                    challenge: Bytes::from_slice(&request[..32]).unwrap(),
-                    app_id: Bytes::from_slice(&request[32..64]).unwrap(),
-                    key_handle: Bytes::from_slice(&request[65..]).unwrap(),
+                    challenge: &request[..32],
+                    app_id: &request[32..64],
+                    key_handle: &request[65..],
                 }))
             }
 
@@ -233,16 +233,19 @@ impl<const S: usize> TryFrom<&iso7816::Command<S>> for Request {
 /// [`Response`].
 pub trait Authenticator {
     /// Register a U2F credential.
-    fn register(&mut self, request: &register::Request) -> Result<register::Response>;
+    fn register(&mut self, request: &register::Request<'_>) -> Result<register::Response>;
     /// Authenticate with a U2F credential.
-    fn authenticate(&mut self, request: &authenticate::Request) -> Result<authenticate::Response>;
+    fn authenticate(
+        &mut self,
+        request: &authenticate::Request<'_>,
+    ) -> Result<authenticate::Response>;
     /// Supported U2F version.
     fn version() -> [u8; 6] {
         *b"U2F_V2"
     }
 
     #[inline(never)]
-    fn call_ctap1(&mut self, request: &Request) -> Result<Response> {
+    fn call_ctap1(&mut self, request: &Request<'_>) -> Result<Response> {
         match request {
             Request::Register(reg) => {
                 debug_now!("CTAP1.REG");
@@ -257,9 +260,9 @@ pub trait Authenticator {
     }
 }
 
-impl<A: Authenticator> crate::Rpc<Error, Request, Response> for A {
+impl<A: Authenticator> crate::Rpc<Error, Request<'_>, Response> for A {
     /// Dispatches the enum of possible requests into the appropriate trait method.
-    fn call(&mut self, request: &Request) -> Result<Response> {
+    fn call(&mut self, request: &Request<'_>) -> Result<Response> {
         self.call_ctap1(request)
     }
 }

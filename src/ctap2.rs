@@ -201,12 +201,12 @@ bitflags! {
 }
 
 pub trait SerializeAttestedCredentialData {
-    fn serialize(&self) -> Bytes<ATTESTED_CREDENTIAL_DATA_LENGTH>;
+    fn serialize(&self, buffer: &mut SerializedAuthenticatorData) -> Result<()>;
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct AuthenticatorData<A, E> {
-    pub rp_id_hash: Bytes<32>,
+pub struct AuthenticatorData<'a, A, E> {
+    pub rp_id_hash: &'a [u8],
     pub flags: AuthenticatorDataFlags,
     pub sign_count: u32,
     pub attested_credential_data: Option<A>,
@@ -217,35 +217,34 @@ pub type SerializedAuthenticatorData = Bytes<AUTHENTICATOR_DATA_LENGTH>;
 
 // The reason for this non-use of CBOR is for compatibility with
 // FIDO U2F authentication signatures.
-impl<A: SerializeAttestedCredentialData, E: serde::Serialize> AuthenticatorData<A, E> {
+impl<'a, A: SerializeAttestedCredentialData, E: serde::Serialize> AuthenticatorData<'a, A, E> {
     #[inline(never)]
-    pub fn serialize(&self) -> SerializedAuthenticatorData {
+    pub fn serialize(&self) -> Result<SerializedAuthenticatorData> {
         let mut bytes = SerializedAuthenticatorData::new();
 
         // 32 bytes, the RP id's hash
-        bytes.extend_from_slice(&self.rp_id_hash).unwrap();
+        bytes
+            .extend_from_slice(self.rp_id_hash)
+            .map_err(|_| Error::Other)?;
         // flags
-        bytes.push(self.flags.bits()).unwrap();
+        bytes.push(self.flags.bits()).map_err(|_| Error::Other)?;
         // signature counts as 32-bit unsigned big-endian integer.
         bytes
             .extend_from_slice(&self.sign_count.to_be_bytes())
-            .unwrap();
+            .map_err(|_| Error::Other)?;
 
         // the attested credential data
-        if let Some(ref attested_credential_data) = &self.attested_credential_data {
-            bytes
-                .extend_from_slice(&attested_credential_data.serialize())
-                .unwrap();
+        if let Some(attested_credential_data) = &self.attested_credential_data {
+            attested_credential_data.serialize(&mut bytes)?;
         }
 
         // the extensions data
         if let Some(extensions) = self.extensions.as_ref() {
-            let mut extensions_buf = [0u8; 128];
-            let ser = crate::serde::cbor_serialize(extensions, &mut extensions_buf).unwrap();
-            bytes.extend_from_slice(ser).unwrap();
+            cbor_smol::cbor_serialize_extending_bytes(extensions, &mut bytes)
+                .map_err(|_| Error::Other)?;
         }
 
-        bytes
+        Ok(bytes)
     }
 }
 
