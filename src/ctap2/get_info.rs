@@ -108,6 +108,7 @@ impl ResponseBuilder {
 #[non_exhaustive]
 #[serde(rename_all = "camelCase")]
 pub struct CtapOptions {
+    #[cfg(feature = "get-info-full")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ep: Option<bool>, // default false
     pub rk: bool,
@@ -119,32 +120,42 @@ pub struct CtapOptions {
     pub uv: Option<bool>, // default not capable
     #[serde(skip_serializing_if = "Option::is_none")]
     pub plat: Option<bool>, // default false
+    #[cfg(feature = "get-info-full")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub uv_acfg: Option<bool>, // default false
+    #[cfg(feature = "get-info-full")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub always_uv: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub cred_mgmt: Option<bool>,
+    #[cfg(feature = "get-info-full")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub authnr_cfg: Option<bool>,
+    #[cfg(feature = "get-info-full")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub bio_enroll: Option<bool>, // default false
     #[serde(skip_serializing_if = "Option::is_none")]
     pub client_pin: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub large_blobs: Option<bool>,
+    #[cfg(feature = "get-info-full")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub uv_bio_enroll: Option<bool>,
+    #[cfg(feature = "get-info-full")]
     #[serde(rename = "setMinPINLength", skip_serializing_if = "Option::is_none")]
     pub set_min_pin_length: Option<bool>, // default false
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pin_uv_auth_token: Option<bool>,
+    #[cfg(feature = "get-info-full")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub make_cred_uv_not_rqd: Option<bool>,
+    #[cfg(feature = "get-info-full")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub credential_mgmt_preview: Option<bool>,
+    #[cfg(feature = "get-info-full")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub user_verification_mgmt_preview: Option<bool>,
+    #[cfg(feature = "get-info-full")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub no_mc_ga_permissions_with_client_pin: Option<bool>,
 }
@@ -152,24 +163,35 @@ pub struct CtapOptions {
 impl Default for CtapOptions {
     fn default() -> Self {
         Self {
+            #[cfg(feature = "get-info-full")]
             ep: None,
             rk: false,
             up: true,
             uv: None,
             plat: None,
+            #[cfg(feature = "get-info-full")]
             uv_acfg: None,
+            #[cfg(feature = "get-info-full")]
             always_uv: None,
             cred_mgmt: None,
+            #[cfg(feature = "get-info-full")]
             authnr_cfg: None,
+            #[cfg(feature = "get-info-full")]
             bio_enroll: None,
             client_pin: None,
             large_blobs: None,
+            #[cfg(feature = "get-info-full")]
             uv_bio_enroll: None,
             pin_uv_auth_token: None,
+            #[cfg(feature = "get-info-full")]
             set_min_pin_length: None,
+            #[cfg(feature = "get-info-full")]
             make_cred_uv_not_rqd: None,
+            #[cfg(feature = "get-info-full")]
             credential_mgmt_preview: None,
+            #[cfg(feature = "get-info-full")]
             user_verification_mgmt_preview: None,
+            #[cfg(feature = "get-info-full")]
             no_mc_ga_permissions_with_client_pin: None,
         }
     }

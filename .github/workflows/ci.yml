@@ -16,6 +16,7 @@ jobs:
     - name: Check library
       run: |
         cargo check
+        cargo check --features get-info-full
         cargo check --features large-blobs
         cargo check --all-features
 
