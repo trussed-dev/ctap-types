@@ -55,6 +55,66 @@ pub struct Response {
     // FIDO_2_1
     #[serde(skip_serializing_if = "Option::is_none")]
     pub max_serialized_large_blob_array: Option<usize>,
+
+    // 0x0C
+    // FIDO_2_1
+    #[cfg(feature = "get-info-full")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub force_pin_change: Option<bool>,
+
+    // 0x0D
+    // FIDO_2_1
+    #[cfg(feature = "get-info-full")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub min_pin_length: Option<usize>,
+
+    // 0x0E
+    // FIDO_2_1
+    #[cfg(feature = "get-info-full")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub firmware_version: Option<usize>,
+
+    // 0x0F
+    // FIDO_2_1
+    #[cfg(feature = "get-info-full")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_cred_blob_length: Option<usize>,
+
+    // 0x10
+    // FIDO_2_1
+    #[cfg(feature = "get-info-full")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_rpids_for_set_min_pin_length: Option<usize>,
+
+    // 0x11
+    // FIDO_2_1
+    #[cfg(feature = "get-info-full")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub preferred_platform_uv_attempts: Option<usize>,
+
+    // 0x12
+    // FIDO_2_1
+    #[cfg(feature = "get-info-full")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub uv_modality: Option<usize>,
+
+    // 0x13
+    // FIDO_2_1
+    #[cfg(feature = "get-info-full")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub certifications: Option<Certifications>,
+
+    // 0x14
+    // FIDO_2_1
+    #[cfg(feature = "get-info-full")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub remaining_discoverable_credentials: Option<usize>,
+
+    // 0x15
+    // FIDO_2_1
+    #[cfg(feature = "get-info-full")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub vendor_prototype_config_commands: Option<usize>,
 }
 
 impl Default for Response {
@@ -63,19 +123,13 @@ impl Default for Response {
         zero_aaguid.resize_default(16).unwrap();
         let aaguid = Bytes::<16>::from(zero_aaguid);
 
-        Self {
-            versions: Vec::new(),
-            extensions: None,
+        let mut response = ResponseBuilder {
             aaguid,
-            options: Some(CtapOptions::default()),
-            max_msg_size: None, //Some(MESSAGE_SIZE),
-            pin_protocols: None,
-            max_creds_in_list: None,
-            max_cred_id_length: None,
-            transports: None,
-            algorithms: None,
-            max_serialized_large_blob_array: None,
+            versions: Vec::new(),
         }
+        .build();
+        response.options = Some(CtapOptions::default());
+        response
     }
 }
 
@@ -100,6 +154,26 @@ impl ResponseBuilder {
             transports: None,
             algorithms: None,
             max_serialized_large_blob_array: None,
+            #[cfg(feature = "get-info-full")]
+            force_pin_change: None,
+            #[cfg(feature = "get-info-full")]
+            min_pin_length: None,
+            #[cfg(feature = "get-info-full")]
+            firmware_version: None,
+            #[cfg(feature = "get-info-full")]
+            max_cred_blob_length: None,
+            #[cfg(feature = "get-info-full")]
+            max_rpids_for_set_min_pin_length: None,
+            #[cfg(feature = "get-info-full")]
+            preferred_platform_uv_attempts: None,
+            #[cfg(feature = "get-info-full")]
+            uv_modality: None,
+            #[cfg(feature = "get-info-full")]
+            certifications: None,
+            #[cfg(feature = "get-info-full")]
+            remaining_discoverable_credentials: None,
+            #[cfg(feature = "get-info-full")]
+            vendor_prototype_config_commands: None,
         }
     }
 }
@@ -195,4 +269,33 @@ impl Default for CtapOptions {
             no_mc_ga_permissions_with_client_pin: None,
         }
     }
+}
+
+#[cfg(feature = "get-info-full")]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[non_exhaustive]
+pub struct Certifications {
+    #[serde(rename = "FIPS-CMVP-2")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub fips_cmpv2: Option<u8>,
+
+    #[serde(rename = "FIPS-CMVP-3")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub fips_cmpv3: Option<u8>,
+
+    #[serde(rename = "FIPS-CMVP-2-PHY")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub fips_cmpv2_phy: Option<u8>,
+
+    #[serde(rename = "FIPS-CMVP-3-PHY")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub fips_cmpv3_phy: Option<u8>,
+
+    #[serde(rename = "CC-EAL")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cc_eal: Option<u8>,
+
+    #[serde(rename = "FIDO")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub fido: Option<u8>,
 }

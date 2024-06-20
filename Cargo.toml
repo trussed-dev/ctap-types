@@ -21,7 +21,7 @@ serde_bytes = { version = "0.11.12", default-features = false }
 serde_repr = "0.1"
 
 [features]
-# enables all fields for ctap2::get_info::CtapOptions
+# enables all fields for ctap2::get_info
 get-info-full = []
 # enables support for implementing the large-blobs extension, see src/sizes.rs
 large-blobs = []
