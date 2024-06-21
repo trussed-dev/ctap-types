@@ -120,7 +120,7 @@ pub struct Response {
     // FIDO_2_2
     #[cfg(feature = "get-info-full")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub attestation_formats: Option<Vec<super::make_credential::AttestationStatementFormat, 2>>,
+    pub attestation_formats: Option<Vec<super::AttestationStatementFormat, 2>>,
 
     // 0x17
     // FIDO_2_2

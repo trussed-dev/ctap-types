@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use serde_bytes::ByteArray;
 use serde_indexed::{DeserializeIndexed, SerializeIndexed};
 
-use super::{AuthenticatorOptions, Result};
+use super::{AttestationFormatsPreference, AttestationStatement, AuthenticatorOptions, Result};
 use crate::sizes::*;
 use crate::webauthn::*;
 
@@ -85,7 +85,7 @@ pub type AuthenticatorData<'a> =
 
 pub type AllowList<'a> = Vec<PublicKeyCredentialDescriptorRef<'a>, MAX_CREDENTIAL_COUNT_IN_LIST>;
 
-#[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
+#[derive(Clone, Debug, Eq, PartialEq, DeserializeIndexed)]
 #[non_exhaustive]
 #[serde_indexed(offset = 1)]
 pub struct Request<'a> {
@@ -103,12 +103,14 @@ pub struct Request<'a> {
     pub pin_protocol: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub enterprise_attestation: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub attestation_formats_preference: Option<AttestationFormatsPreference>,
 }
 
 // NB: attn object definition / order at end of
 // https://fidoalliance.org/specs/fido-v2.0-ps-20190130/fido-client-to-authenticator-protocol-v2.0-ps-20190130.html#authenticatorMakeCredential
 // does not coincide with what python-fido2 expects in AttestationObject.__init__ *at all* :'-)
-#[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
+#[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed)]
 #[non_exhaustive]
 #[serde_indexed(offset = 1)]
 pub struct Response {
@@ -129,6 +131,8 @@ pub struct Response {
     pub unsigned_extension_outputs: Option<UnsignedExtensionOutputs>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ep_att: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub att_stmt: Option<AttestationStatement>,
 }
 
 #[derive(Debug)]
@@ -151,6 +155,7 @@ impl ResponseBuilder {
             large_blob_key: None,
             unsigned_extension_outputs: None,
             ep_att: None,
+            att_stmt: None,
         }
     }
 }

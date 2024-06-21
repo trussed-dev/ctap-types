@@ -6,7 +6,7 @@ use bitflags::bitflags;
 use cbor_smol::cbor_deserialize;
 use serde::{Deserialize, Serialize};
 
-use crate::{sizes::*, Bytes, Vec};
+use crate::{sizes::*, Bytes, TryFromStrError, Vec};
 
 pub use crate::operation::{Operation, VendorOperation};
 
@@ -247,6 +247,111 @@ impl<'a, A: SerializeAttestedCredentialData, E: serde::Serialize> AuthenticatorD
         }
 
         Ok(bytes)
+    }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+#[non_exhaustive]
+#[serde(untagged)]
+#[allow(clippy::large_enum_variant)]
+pub enum AttestationStatement {
+    None(NoneAttestationStatement),
+    Packed(PackedAttestationStatement),
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
+#[non_exhaustive]
+#[serde(into = "&str", try_from = "&str")]
+pub enum AttestationStatementFormat {
+    None,
+    Packed,
+}
+
+impl AttestationStatementFormat {
+    const NONE: &'static str = "none";
+    const PACKED: &'static str = "packed";
+}
+
+impl From<AttestationStatementFormat> for &str {
+    fn from(format: AttestationStatementFormat) -> Self {
+        match format {
+            AttestationStatementFormat::None => AttestationStatementFormat::NONE,
+            AttestationStatementFormat::Packed => AttestationStatementFormat::PACKED,
+        }
+    }
+}
+
+impl TryFrom<&str> for AttestationStatementFormat {
+    type Error = TryFromStrError;
+
+    fn try_from(s: &str) -> core::result::Result<Self, Self::Error> {
+        match s {
+            Self::NONE => Ok(Self::None),
+            Self::PACKED => Ok(Self::Packed),
+            _ => Err(TryFromStrError),
+        }
+    }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+pub struct NoneAttestationStatement {}
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+pub struct PackedAttestationStatement {
+    pub alg: i32,
+    pub sig: Bytes<ASN1_SIGNATURE_LENGTH>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub x5c: Option<Vec<Bytes<1024>, 1>>,
+}
+
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+pub struct AttestationFormatsPreference {
+    pub(crate) known_formats: Vec<AttestationStatementFormat, 2>,
+    pub(crate) unknown: bool,
+}
+
+impl AttestationFormatsPreference {
+    pub fn known_formats(&self) -> &[AttestationStatementFormat] {
+        &self.known_formats
+    }
+
+    pub fn includes_unknown_formats(&self) -> bool {
+        self.unknown
+    }
+}
+
+impl<'de> Deserialize<'de> for AttestationFormatsPreference {
+    fn deserialize<D>(deserializer: D) -> core::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        struct ValueVisitor;
+
+        impl<'de> serde::de::Visitor<'de> for ValueVisitor {
+            type Value = AttestationFormatsPreference;
+
+            fn expecting(&self, formatter: &mut core::fmt::Formatter) -> core::fmt::Result {
+                formatter.write_str("a sequence")
+            }
+
+            fn visit_seq<A>(self, mut seq: A) -> core::result::Result<Self::Value, A::Error>
+            where
+                A: serde::de::SeqAccess<'de>,
+            {
+                let mut preference = AttestationFormatsPreference::default();
+                while let Some(value) = seq.next_element::<&str>()? {
+                    if let Ok(format) = AttestationStatementFormat::try_from(value) {
+                        preference.known_formats.push(format).ok();
+                    } else {
+                        preference.unknown = true;
+                    }
+                }
+                Ok(preference)
+            }
+        }
+
+        deserializer.deserialize_seq(ValueVisitor)
     }
 }
 

@@ -33,6 +33,18 @@ impl<'a> Arbitrary<'a> for ctap1::register::Request<'a> {
     }
 }
 
+// cannot be derived because of missing impl for Vec<_>
+impl<'a> Arbitrary<'a> for ctap2::AttestationFormatsPreference {
+    fn arbitrary(u: &mut Unstructured<'a>) -> Result<Self> {
+        let known_formats = arbitrary_vec(u)?;
+        let unknown = u.arbitrary()?;
+        Ok(Self {
+            known_formats,
+            unknown,
+        })
+    }
+}
+
 // cannot be derived because of missing impl for serde_bytes::Bytes, EcdhEsHkdf256PublicKey
 impl<'a> Arbitrary<'a> for ctap2::client_pin::Request<'a> {
     fn arbitrary(u: &mut Unstructured<'a>) -> Result<Self> {
@@ -138,6 +150,7 @@ impl<'a> Arbitrary<'a> for ctap2::get_assertion::Request<'a> {
         };
         let pin_protocol = u.arbitrary()?;
         let enterprise_attestation = u.arbitrary()?;
+        let attestation_formats_preference = u.arbitrary()?;
         Ok(Self {
             rp_id,
             client_data_hash,
@@ -147,6 +160,7 @@ impl<'a> Arbitrary<'a> for ctap2::get_assertion::Request<'a> {
             pin_auth,
             pin_protocol,
             enterprise_attestation,
+            attestation_formats_preference,
         })
     }
 }
@@ -196,6 +210,7 @@ impl<'a> Arbitrary<'a> for ctap2::make_credential::Request<'a> {
         };
         let pin_protocol = u.arbitrary()?;
         let enterprise_attestation = u.arbitrary()?;
+        let attestation_formats_preference = u.arbitrary()?;
         Ok(Self {
             client_data_hash,
             rp,
@@ -207,6 +222,7 @@ impl<'a> Arbitrary<'a> for ctap2::make_credential::Request<'a> {
             pin_auth,
             pin_protocol,
             enterprise_attestation,
+            attestation_formats_preference,
         })
     }
 }

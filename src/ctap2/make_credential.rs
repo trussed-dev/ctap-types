@@ -1,12 +1,14 @@
-use crate::{Bytes, TryFromStrError, Vec};
+use crate::Vec;
 
 use serde::{Deserialize, Serialize};
 use serde_bytes::ByteArray;
 use serde_indexed::{DeserializeIndexed, SerializeIndexed};
 
-use super::{AuthenticatorOptions, Error};
+use super::{
+    AttestationFormatsPreference, AttestationStatement, AttestationStatementFormat,
+    AuthenticatorOptions, Error,
+};
 use crate::ctap2::credential_management::CredentialProtectionPolicy;
-use crate::sizes::*;
 use crate::webauthn::*;
 
 impl TryFrom<u8> for CredentialProtectionPolicy {
@@ -45,7 +47,7 @@ pub struct Extensions {
     pub third_party_payment: Option<bool>,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
+#[derive(Clone, Debug, Eq, PartialEq, DeserializeIndexed)]
 #[non_exhaustive]
 #[serde_indexed(offset = 1)]
 pub struct Request<'a> {
@@ -65,6 +67,8 @@ pub struct Request<'a> {
     pub pin_protocol: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub enterprise_attestation: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub attestation_formats_preference: Option<AttestationFormatsPreference>,
 }
 
 pub type AttestationObject = Response;
@@ -141,60 +145,6 @@ impl ResponseBuilder {
             unsigned_extension_outputs: None,
         }
     }
-}
-
-#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
-#[non_exhaustive]
-#[serde(untagged)]
-#[allow(clippy::large_enum_variant)]
-pub enum AttestationStatement {
-    None(NoneAttestationStatement),
-    Packed(PackedAttestationStatement),
-}
-
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-#[non_exhaustive]
-#[serde(into = "&str", try_from = "&str")]
-pub enum AttestationStatementFormat {
-    None,
-    Packed,
-}
-
-impl AttestationStatementFormat {
-    const NONE: &'static str = "none";
-    const PACKED: &'static str = "packed";
-}
-
-impl From<AttestationStatementFormat> for &str {
-    fn from(format: AttestationStatementFormat) -> Self {
-        match format {
-            AttestationStatementFormat::None => AttestationStatementFormat::NONE,
-            AttestationStatementFormat::Packed => AttestationStatementFormat::PACKED,
-        }
-    }
-}
-
-impl TryFrom<&str> for AttestationStatementFormat {
-    type Error = TryFromStrError;
-
-    fn try_from(s: &str) -> Result<Self, Self::Error> {
-        match s {
-            Self::NONE => Ok(Self::None),
-            Self::PACKED => Ok(Self::Packed),
-            _ => Err(TryFromStrError),
-        }
-    }
-}
-
-#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
-pub struct NoneAttestationStatement {}
-
-#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
-pub struct PackedAttestationStatement {
-    pub alg: i32,
-    pub sig: Bytes<ASN1_SIGNATURE_LENGTH>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub x5c: Option<Vec<Bytes<1024>, 1>>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]

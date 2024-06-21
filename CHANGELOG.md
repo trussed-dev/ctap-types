@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Use enums instead of string constants
   - Introduce `Version`, `Extension` and `Transport` enums and use them in `ctap2::get_info`
   - Fix serialization of the `AttestationStatementFormat` enum and use it in `ctap2::make_credential`
+- Remove `Deserialize` implementation for `ctap2::get_assertion::Response`
+- Remove `Serialize` implementation for `ctap2::{get_assertion, make_credential}::Request`
+- Move `AttestationStatement`, `AttestationStatementFormat`, `NoneAttestationStatement`, `PackedAttestationStatement` from `ctap2::make_credential` into the `ctap2` module
 
 ### Added
 
@@ -23,6 +26,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Add new fields to `get_info`
   - Add unsigned extension outputs to `make_credential` and `get_assertion`
   - Add enterprise attestation support to `get_assertion`
+  - Add support for attestation statements in `get_assertion`
+  - Add support for attestation format preferences
+- Derive `Copy` for `ctap2::AttestationStatementFormat`
 
 ## [0.2.0] - 2024-06-21
 
