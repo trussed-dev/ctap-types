@@ -105,7 +105,8 @@ impl<'a> super::SerializeAttestedCredentialData for AttestedCredentialData<'a> {
 pub struct Response {
     pub fmt: String<32>,
     pub auth_data: super::SerializedAuthenticatorData,
-    pub att_stmt: AttestationStatement,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub att_stmt: Option<AttestationStatement>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ep_att: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -116,7 +117,6 @@ pub struct Response {
 pub struct ResponseBuilder {
     pub fmt: String<32>,
     pub auth_data: super::SerializedAuthenticatorData,
-    pub att_stmt: AttestationStatement,
 }
 
 impl ResponseBuilder {
@@ -125,7 +125,7 @@ impl ResponseBuilder {
         Response {
             fmt: self.fmt,
             auth_data: self.auth_data,
-            att_stmt: self.att_stmt,
+            att_stmt: None,
             ep_att: None,
             large_blob_key: None,
         }

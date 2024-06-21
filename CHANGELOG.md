@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Use references where possible
 - Put uncommon fields in `get_info` behind `get-info-full` feature flag and add fields for CTAP 2.1
 - Use byte arrays instead of slices or Bytes<_> where possible
+- Make `att_stmt` optional in `make_credential::Response`, preparing for CTAP 2.2
 
 [#8]: https://github.com/trussed-dev/ctap-types/pull/8
 [#9]: https://github.com/solokeys/ctap-types/issues/9
