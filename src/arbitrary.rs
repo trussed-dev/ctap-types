@@ -137,6 +137,7 @@ impl<'a> Arbitrary<'a> for ctap2::get_assertion::Request<'a> {
             None
         };
         let pin_protocol = u.arbitrary()?;
+        let enterprise_attestation = u.arbitrary()?;
         Ok(Self {
             rp_id,
             client_data_hash,
@@ -145,6 +146,7 @@ impl<'a> Arbitrary<'a> for ctap2::get_assertion::Request<'a> {
             options,
             pin_auth,
             pin_protocol,
+            enterprise_attestation,
         })
     }
 }

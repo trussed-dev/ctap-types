@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Add support for the `thirdPartyPayment` extension behind a `third-party-payment` feature (disabled by default)
   - Add new fields to `get_info`
   - Add unsigned extension outputs to `make_credential` and `get_assertion`
+  - Add enterprise attestation support to `get_assertion`
 
 ## [0.2.0] - 2024-06-21
 

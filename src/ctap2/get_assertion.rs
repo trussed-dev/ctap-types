@@ -101,6 +101,8 @@ pub struct Request<'a> {
     pub pin_auth: Option<&'a serde_bytes::Bytes>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pin_protocol: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub enterprise_attestation: Option<u32>,
 }
 
 // NB: attn object definition / order at end of
@@ -125,6 +127,8 @@ pub struct Response {
     pub large_blob_key: Option<ByteArray<32>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub unsigned_extension_outputs: Option<UnsignedExtensionOutputs>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ep_att: Option<bool>,
 }
 
 #[derive(Debug)]
@@ -146,6 +150,7 @@ impl ResponseBuilder {
             user_selected: None,
             large_blob_key: None,
             unsigned_extension_outputs: None,
+            ep_att: None,
         }
     }
 }
