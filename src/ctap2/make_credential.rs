@@ -149,7 +149,7 @@ pub enum AttestationStatement {
     Packed(PackedAttestationStatement),
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[non_exhaustive]
 #[serde(into = "&str", try_from = "&str")]
 pub enum AttestationStatementFormat {

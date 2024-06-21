@@ -115,6 +115,24 @@ pub struct Response {
     #[cfg(feature = "get-info-full")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub vendor_prototype_config_commands: Option<usize>,
+
+    // 0x16
+    // FIDO_2_2
+    #[cfg(feature = "get-info-full")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub attestation_formats: Option<Vec<super::make_credential::AttestationStatementFormat, 2>>,
+
+    // 0x17
+    // FIDO_2_2
+    #[cfg(feature = "get-info-full")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub uv_count_since_last_pin_entry: Option<usize>,
+
+    // 0x18
+    // FIDO_2_2
+    #[cfg(feature = "get-info-full")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub long_touch_for_reset: Option<bool>,
 }
 
 impl Default for Response {
@@ -174,6 +192,12 @@ impl ResponseBuilder {
             remaining_discoverable_credentials: None,
             #[cfg(feature = "get-info-full")]
             vendor_prototype_config_commands: None,
+            #[cfg(feature = "get-info-full")]
+            attestation_formats: None,
+            #[cfg(feature = "get-info-full")]
+            uv_count_since_last_pin_entry: None,
+            #[cfg(feature = "get-info-full")]
+            long_touch_for_reset: None,
         }
     }
 }
