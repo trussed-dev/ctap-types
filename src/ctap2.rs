@@ -206,7 +206,7 @@ pub trait SerializeAttestedCredentialData {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct AuthenticatorData<'a, A, E> {
-    pub rp_id_hash: &'a [u8],
+    pub rp_id_hash: &'a [u8; 32],
     pub flags: AuthenticatorDataFlags,
     pub sign_count: u32,
     pub attested_credential_data: Option<A>,

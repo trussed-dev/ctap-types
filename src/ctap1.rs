@@ -15,8 +15,8 @@ pub mod authenticate {
     #[derive(Clone, Debug, Eq, PartialEq)]
     pub struct Request<'a> {
         pub control_byte: ControlByte,
-        pub challenge: &'a [u8],
-        pub app_id: &'a [u8],
+        pub challenge: &'a [u8; 32],
+        pub app_id: &'a [u8; 32],
         pub key_handle: &'a [u8],
     }
 
@@ -33,8 +33,8 @@ pub mod register {
 
     #[derive(Clone, Debug, Eq, PartialEq)]
     pub struct Request<'a> {
-        pub challenge: &'a [u8],
-        pub app_id: &'a [u8],
+        pub challenge: &'a [u8; 32],
+        pub app_id: &'a [u8; 32],
     }
 
     #[derive(Clone, Debug, Eq, PartialEq)]
@@ -50,33 +50,20 @@ pub mod register {
         pub fn new(
             header_byte: u8,
             public_key: &cosey::EcdhEsHkdf256PublicKey,
-            key_handle: &[u8],
+            key_handle: Bytes<255>,
             signature: Bytes<72>,
-            attestation_certificate: &[u8],
+            attestation_certificate: Bytes<1024>,
         ) -> Self {
-            debug_assert!(key_handle.len() <= 255);
-            debug_assert!(attestation_certificate.len() <= 1024);
-            debug_assert!(signature.len() <= 72);
-
             let mut public_key_bytes = Bytes::new();
-            let mut key_handle_bytes = Bytes::new();
-            let mut cert_bytes = Bytes::new();
-
             public_key_bytes.push(0x04).unwrap();
             public_key_bytes.extend_from_slice(&public_key.x).unwrap();
             public_key_bytes.extend_from_slice(&public_key.y).unwrap();
 
-            key_handle_bytes.extend_from_slice(key_handle).unwrap();
-
-            cert_bytes
-                .extend_from_slice(attestation_certificate)
-                .unwrap();
-
             Self {
                 header_byte,
                 public_key: public_key_bytes,
-                key_handle: key_handle_bytes,
-                attestation_certificate: cert_bytes,
+                key_handle,
+                attestation_certificate,
                 signature,
             }
         }
@@ -196,8 +183,8 @@ impl<'a, const S: usize> TryFrom<&'a iso7816::Command<S>> for Request<'a> {
                     return Err(Error::IncorrectDataParameter);
                 }
                 Ok(Request::Register(Register {
-                    challenge: &request[..32],
-                    app_id: &request[32..],
+                    challenge: (&request[..32]).try_into().unwrap(),
+                    app_id: (&request[32..]).try_into().unwrap(),
                 }))
             }
 
@@ -213,8 +200,8 @@ impl<'a, const S: usize> TryFrom<&'a iso7816::Command<S>> for Request<'a> {
                 }
                 Ok(Request::Authenticate(Authenticate {
                     control_byte,
-                    challenge: &request[..32],
-                    app_id: &request[32..64],
+                    challenge: (&request[..32]).try_into().unwrap(),
+                    app_id: (&request[32..64]).try_into().unwrap(),
                     key_handle: &request[65..],
                 }))
             }

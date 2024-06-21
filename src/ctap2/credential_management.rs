@@ -1,16 +1,12 @@
 use cosey::PublicKey;
+use serde_bytes::ByteArray;
 use serde_indexed::{DeserializeIndexed, SerializeIndexed};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 
-use crate::{
-    webauthn::{
-        PublicKeyCredentialDescriptor, PublicKeyCredentialDescriptorRef,
-        PublicKeyCredentialRpEntity, PublicKeyCredentialUserEntity,
-    },
-    Bytes,
+use crate::webauthn::{
+    PublicKeyCredentialDescriptor, PublicKeyCredentialDescriptorRef, PublicKeyCredentialRpEntity,
+    PublicKeyCredentialUserEntity,
 };
-
-type Bytes32 = Bytes<32>;
 
 #[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Serialize_repr, Deserialize_repr)]
 #[repr(u8)]
@@ -40,7 +36,7 @@ pub enum Subcommand {
 pub struct SubcommandParameters<'a> {
     // 0x01
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub rp_id_hash: Option<&'a serde_bytes::Bytes>,
+    pub rp_id_hash: Option<&'a ByteArray<32>>,
     // 0x02
     #[serde(skip_serializing_if = "Option::is_none")]
     pub credential_id: Option<PublicKeyCredentialDescriptorRef<'a>>,
@@ -86,7 +82,7 @@ pub struct Response {
     pub rp: Option<PublicKeyCredentialRpEntity>,
     // 0x04
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub rp_id_hash: Option<Bytes32>,
+    pub rp_id_hash: Option<ByteArray<32>>,
     // 0x05
     #[serde(skip_serializing_if = "Option::is_none")]
     pub total_rps: Option<u32>,
@@ -110,5 +106,5 @@ pub struct Response {
     pub cred_protect: Option<CredentialProtectionPolicy>,
     // 0x0B
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub large_blob_key: Option<Bytes<32>>,
+    pub large_blob_key: Option<ByteArray<32>>,
 }

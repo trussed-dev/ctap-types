@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Mark CTAP2 request and response types as non-exhaustive where possible
 - Use references where possible
 - Put uncommon fields in `get_info` behind `get-info-full` feature flag and add fields for CTAP 2.1
+- Use byte arrays instead of slices or Bytes<_> where possible
 
 [#8]: https://github.com/trussed-dev/ctap-types/pull/8
 [#9]: https://github.com/solokeys/ctap-types/issues/9

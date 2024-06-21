@@ -1,6 +1,7 @@
 use crate::{Bytes, Vec};
 use cosey::EcdhEsHkdf256PublicKey;
 use serde::{Deserialize, Serialize};
+use serde_bytes::ByteArray;
 use serde_indexed::{DeserializeIndexed, SerializeIndexed};
 
 use super::{AuthenticatorOptions, Result};
@@ -90,7 +91,7 @@ pub struct Response {
     /// A key that can be used to encrypt and decrypt large blob data.
     /// See https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-20210615.html#sctn-getAssert-authnr-alg
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub large_blob_key: Option<Bytes<32>>,
+    pub large_blob_key: Option<ByteArray<32>>,
 }
 
 #[derive(Debug)]

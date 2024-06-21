@@ -1,6 +1,7 @@
 use crate::{Bytes, String, Vec};
 
 use serde::{Deserialize, Serialize};
+use serde_bytes::ByteArray;
 use serde_indexed::{DeserializeIndexed, SerializeIndexed};
 
 use super::{AuthenticatorOptions, Error};
@@ -108,7 +109,7 @@ pub struct Response {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ep_att: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub large_blob_key: Option<Bytes<32>>,
+    pub large_blob_key: Option<ByteArray<32>>,
 }
 
 #[derive(Debug)]

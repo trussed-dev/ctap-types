@@ -23,6 +23,7 @@ pub use heapless;
 pub use heapless::{String, Vec};
 pub use heapless_bytes;
 pub use heapless_bytes::Bytes;
+pub use serde_bytes::ByteArray;
 
 pub mod authenticator;
 pub mod ctap1;
