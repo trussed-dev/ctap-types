@@ -123,6 +123,8 @@ pub struct Response {
     /// See https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-20210615.html#sctn-getAssert-authnr-alg
     #[serde(skip_serializing_if = "Option::is_none")]
     pub large_blob_key: Option<ByteArray<32>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub unsigned_extension_outputs: Option<UnsignedExtensionOutputs>,
 }
 
 #[derive(Debug)]
@@ -143,6 +145,11 @@ impl ResponseBuilder {
             number_of_credentials: None,
             user_selected: None,
             large_blob_key: None,
+            unsigned_extension_outputs: None,
         }
     }
 }
+
+#[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
+#[non_exhaustive]
+pub struct UnsignedExtensionOutputs {}

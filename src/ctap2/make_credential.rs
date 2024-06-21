@@ -119,6 +119,8 @@ pub struct Response {
     pub ep_att: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub large_blob_key: Option<ByteArray<32>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub unsigned_extension_outputs: Option<UnsignedExtensionOutputs>,
 }
 
 #[derive(Debug)]
@@ -136,6 +138,7 @@ impl ResponseBuilder {
             att_stmt: None,
             ep_att: None,
             large_blob_key: None,
+            unsigned_extension_outputs: None,
         }
     }
 }
@@ -193,6 +196,10 @@ pub struct PackedAttestationStatement {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub x5c: Option<Vec<Bytes<1024>, 1>>,
 }
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+#[non_exhaustive]
+pub struct UnsignedExtensionOutputs {}
 
 #[cfg(test)]
 mod tests {
