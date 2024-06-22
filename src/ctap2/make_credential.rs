@@ -1,4 +1,4 @@
-use crate::{Bytes, String, Vec};
+use crate::{Bytes, TryFromStrError, Vec};
 
 use serde::{Deserialize, Serialize};
 use serde_bytes::ByteArray;
@@ -103,7 +103,7 @@ impl<'a> super::SerializeAttestedCredentialData for AttestedCredentialData<'a> {
 #[non_exhaustive]
 #[serde_indexed(offset = 1)]
 pub struct Response {
-    pub fmt: String<32>,
+    pub fmt: AttestationStatementFormat,
     pub auth_data: super::SerializedAuthenticatorData,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub att_stmt: Option<AttestationStatement>,
@@ -115,7 +115,7 @@ pub struct Response {
 
 #[derive(Debug)]
 pub struct ResponseBuilder {
-    pub fmt: String<32>,
+    pub fmt: AttestationStatementFormat,
     pub auth_data: super::SerializedAuthenticatorData,
 }
 
@@ -143,10 +143,36 @@ pub enum AttestationStatement {
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
 #[non_exhaustive]
-#[serde(untagged)]
+#[serde(into = "&str", try_from = "&str")]
 pub enum AttestationStatementFormat {
     None,
     Packed,
+}
+
+impl AttestationStatementFormat {
+    const NONE: &'static str = "none";
+    const PACKED: &'static str = "packed";
+}
+
+impl From<AttestationStatementFormat> for &str {
+    fn from(format: AttestationStatementFormat) -> Self {
+        match format {
+            AttestationStatementFormat::None => AttestationStatementFormat::NONE,
+            AttestationStatementFormat::Packed => AttestationStatementFormat::PACKED,
+        }
+    }
+}
+
+impl TryFrom<&str> for AttestationStatementFormat {
+    type Error = TryFromStrError;
+
+    fn try_from(s: &str) -> Result<Self, Self::Error> {
+        match s {
+            Self::NONE => Ok(Self::None),
+            Self::PACKED => Ok(Self::Packed),
+            _ => Err(TryFromStrError),
+        }
+    }
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]

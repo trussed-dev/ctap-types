@@ -1,5 +1,5 @@
 use crate::webauthn::FilteredPublicKeyCredentialParameters;
-use crate::{Bytes, String, Vec};
+use crate::{Bytes, TryFromStrError, Vec};
 use serde::{Deserialize, Serialize};
 use serde_indexed::{DeserializeIndexed, SerializeIndexed};
 
@@ -10,11 +10,11 @@ pub type AuthenticatorInfo = Response;
 #[serde_indexed(offset = 1)]
 pub struct Response {
     // 0x01
-    pub versions: Vec<String<12>, 4>,
+    pub versions: Vec<Version, 4>,
 
     // 0x02
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extensions: Option<Vec<String<13>, 4>>,
+    pub extensions: Option<Vec<Extension, 4>>,
 
     // 0x03
     pub aaguid: Bytes<16>,
@@ -44,7 +44,7 @@ pub struct Response {
     // 0x09
     // FIDO_2_1
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub transports: Option<Vec<String<8>, 4>>,
+    pub transports: Option<Vec<Transport, 4>>,
 
     // 0x0A
     // FIDO_2_1
@@ -135,7 +135,7 @@ impl Default for Response {
 
 #[derive(Debug)]
 pub struct ResponseBuilder {
-    pub versions: Vec<String<12>, 4>,
+    pub versions: Vec<Version, 4>,
     pub aaguid: Bytes<16>,
 }
 
@@ -174,6 +174,120 @@ impl ResponseBuilder {
             remaining_discoverable_credentials: None,
             #[cfg(feature = "get-info-full")]
             vendor_prototype_config_commands: None,
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[non_exhaustive]
+#[serde(into = "&str", try_from = "&str")]
+pub enum Version {
+    Fido2_0,
+    Fido2_1,
+    Fido2_1Pre,
+    U2fV2,
+}
+
+impl Version {
+    const FIDO_2_0: &'static str = "FIDO_2_0";
+    const FIDO_2_1: &'static str = "FIDO_2_1";
+    const FIDO_2_1_PRE: &'static str = "FIDO_2_1_PRE";
+    const U2F_V2: &'static str = "U2F_V2";
+}
+
+impl From<Version> for &str {
+    fn from(version: Version) -> Self {
+        match version {
+            Version::Fido2_0 => Version::FIDO_2_0,
+            Version::Fido2_1 => Version::FIDO_2_1,
+            Version::Fido2_1Pre => Version::FIDO_2_1_PRE,
+            Version::U2fV2 => Version::U2F_V2,
+        }
+    }
+}
+
+impl TryFrom<&str> for Version {
+    type Error = TryFromStrError;
+
+    fn try_from(s: &str) -> Result<Self, Self::Error> {
+        match s {
+            Self::FIDO_2_0 => Ok(Self::Fido2_0),
+            Self::FIDO_2_1 => Ok(Self::Fido2_1),
+            Self::FIDO_2_1_PRE => Ok(Self::Fido2_1Pre),
+            Self::U2F_V2 => Ok(Self::U2fV2),
+            _ => Err(TryFromStrError),
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[non_exhaustive]
+#[serde(into = "&str", try_from = "&str")]
+pub enum Extension {
+    CredProtect,
+    HmacSecret,
+    LargeBlobKey,
+}
+
+impl Extension {
+    const CRED_PROTECT: &'static str = "credProtect";
+    const HMAC_SECRET: &'static str = "hmac-secret";
+    const LARGE_BLOB_KEY: &'static str = "largeBlobKey";
+}
+
+impl From<Extension> for &str {
+    fn from(extension: Extension) -> Self {
+        match extension {
+            Extension::CredProtect => Extension::CRED_PROTECT,
+            Extension::HmacSecret => Extension::HMAC_SECRET,
+            Extension::LargeBlobKey => Extension::LARGE_BLOB_KEY,
+        }
+    }
+}
+
+impl TryFrom<&str> for Extension {
+    type Error = TryFromStrError;
+
+    fn try_from(s: &str) -> Result<Self, Self::Error> {
+        match s {
+            Self::CRED_PROTECT => Ok(Self::CredProtect),
+            Self::HMAC_SECRET => Ok(Self::HmacSecret),
+            Self::LARGE_BLOB_KEY => Ok(Self::LargeBlobKey),
+            _ => Err(TryFromStrError),
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[non_exhaustive]
+#[serde(into = "&str", try_from = "&str")]
+pub enum Transport {
+    Nfc,
+    Usb,
+}
+
+impl Transport {
+    const NFC: &'static str = "nfc";
+    const USB: &'static str = "usb";
+}
+
+impl From<Transport> for &str {
+    fn from(transport: Transport) -> Self {
+        match transport {
+            Transport::Nfc => Transport::NFC,
+            Transport::Usb => Transport::USB,
+        }
+    }
+}
+
+impl TryFrom<&str> for Transport {
+    type Error = TryFromStrError;
+
+    fn try_from(s: &str) -> Result<Self, Self::Error> {
+        match s {
+            Self::NFC => Ok(Self::Nfc),
+            Self::USB => Ok(Self::Usb),
+            _ => Err(TryFromStrError),
         }
     }
 }

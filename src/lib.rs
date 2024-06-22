@@ -35,6 +35,19 @@ pub mod webauthn;
 
 pub use ctap2::{Error, Result};
 
+use core::fmt::{self, Display, Formatter};
+
+/// An error returned by the `TryFrom<&str>` implementation for enums if an invalid value is
+/// provided.
+#[derive(Debug)]
+pub struct TryFromStrError;
+
+impl Display for TryFromStrError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        "invalid enum value".fmt(f)
+    }
+}
+
 #[cfg(test)]
 mod tests {}
 

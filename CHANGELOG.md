@@ -8,7 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased]: https://github.com/trussed-dev/ctap-types/compare/0.2.0...HEAD
 
--
+### Breaking Changes
+
+- Use enums instead of string constants
+  - Introduce `Version`, `Extension` and `Transport` enums and use them in `ctap2::get_info`
+  - Fix serialization of the `AttestationStatementFormat` enum and use it in `ctap2::make_credential`
 
 ## [0.2.0] - 2024-06-21
 
