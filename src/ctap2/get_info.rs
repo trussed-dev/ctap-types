@@ -413,3 +413,168 @@ pub struct Certifications {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub fido: Option<u8>,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_test::{assert_ser_tokens, assert_tokens, Token};
+
+    #[test]
+    fn test_serde_version() {
+        let versions = [
+            (Version::Fido2_0, "FIDO_2_0"),
+            (Version::Fido2_1, "FIDO_2_1"),
+            (Version::Fido2_1Pre, "FIDO_2_1_PRE"),
+            (Version::U2fV2, "U2F_V2"),
+        ];
+        for (version, s) in versions {
+            assert_tokens(&version, &[Token::BorrowedStr(s)]);
+        }
+    }
+
+    #[test]
+    fn test_serde_extension() {
+        let extensions = [
+            (Extension::CredProtect, "credProtect"),
+            (Extension::HmacSecret, "hmac-secret"),
+            (Extension::LargeBlobKey, "largeBlobKey"),
+        ];
+        for (extension, s) in extensions {
+            assert_tokens(&extension, &[Token::BorrowedStr(s)]);
+        }
+    }
+
+    #[test]
+    fn test_serde_transport() {
+        let transports = [(Transport::Nfc, "nfc"), (Transport::Usb, "usb")];
+        for (transport, s) in transports {
+            assert_tokens(&transport, &[Token::BorrowedStr(s)]);
+        }
+    }
+
+    #[test]
+    fn test_serde_get_info_minimal() {
+        let versions = Vec::from_slice(&[Version::Fido2_0, Version::Fido2_1]).unwrap();
+        let aaguid = Bytes::from_slice(&[0xff; 16]).unwrap();
+        let response = ResponseBuilder { versions, aaguid }.build();
+        assert_tokens(
+            &response,
+            &[
+                Token::Map { len: Some(2) },
+                Token::U64(1),
+                Token::Seq { len: Some(2) },
+                Token::BorrowedStr("FIDO_2_0"),
+                Token::BorrowedStr("FIDO_2_1"),
+                Token::SeqEnd,
+                Token::U64(3),
+                Token::BorrowedBytes(&[0xff; 16]),
+                Token::MapEnd,
+            ],
+        );
+    }
+
+    #[test]
+    fn test_serde_get_info_default() {
+        // This corresponds to the response sent by the Nitrokey 3, see for example:
+        // https://github.com/Nitrokey/nitrokey-3-firmware/blob/0d7209f1f75354878c0cf3454055defe8372ed14/utils/fido2-mds/metadata/v4/metadata-nk3xn-v4.json
+        const AAGUID: &[u8] = &[
+            236, 153, 219, 25, 205, 31, 76, 6, 162, 169, 148, 15, 23, 166, 163, 11,
+        ];
+        let versions =
+            Vec::from_slice(&[Version::U2fV2, Version::Fido2_0, Version::Fido2_1]).unwrap();
+        let aaguid = Bytes::from_slice(AAGUID).unwrap();
+        let mut options = CtapOptions::default();
+        options.rk = true;
+        options.plat = Some(false);
+        options.client_pin = Some(false);
+        options.cred_mgmt = Some(true);
+        options.large_blobs = Some(false);
+        options.pin_uv_auth_token = Some(true);
+        let mut response = ResponseBuilder { versions, aaguid }.build();
+        response.extensions =
+            Some(Vec::from_slice(&[Extension::CredProtect, Extension::HmacSecret]).unwrap());
+        response.options = Some(options);
+        response.max_msg_size = Some(3072);
+        response.pin_protocols = Some(Vec::from_slice(&[1, 0]).unwrap());
+        response.max_creds_in_list = Some(10);
+        response.max_cred_id_length = Some(255);
+        response.transports = Some(Vec::from_slice(&[Transport::Nfc, Transport::Usb]).unwrap());
+        assert_ser_tokens(
+            &response,
+            &[
+                Token::Map { len: Some(9) },
+                // 0x01: versions
+                Token::U64(0x01),
+                Token::Seq { len: Some(3) },
+                Token::BorrowedStr("U2F_V2"),
+                Token::BorrowedStr("FIDO_2_0"),
+                Token::BorrowedStr("FIDO_2_1"),
+                Token::SeqEnd,
+                // 0x02: extensions
+                Token::U64(0x02),
+                Token::Some,
+                Token::Seq { len: Some(2) },
+                Token::BorrowedStr("credProtect"),
+                Token::BorrowedStr("hmac-secret"),
+                Token::SeqEnd,
+                // 0x03: aaguid
+                Token::U64(0x03),
+                Token::BorrowedBytes(AAGUID),
+                // 0x04: options
+                Token::U64(0x04),
+                Token::Some,
+                Token::Struct {
+                    name: "CtapOptions",
+                    len: 7,
+                },
+                Token::BorrowedStr("rk"),
+                Token::Bool(true),
+                Token::BorrowedStr("up"),
+                Token::Bool(true),
+                Token::BorrowedStr("plat"),
+                Token::Some,
+                Token::Bool(false),
+                Token::BorrowedStr("credMgmt"),
+                Token::Some,
+                Token::Bool(true),
+                Token::BorrowedStr("clientPin"),
+                Token::Some,
+                Token::Bool(false),
+                Token::BorrowedStr("largeBlobs"),
+                Token::Some,
+                Token::Bool(false),
+                Token::BorrowedStr("pinUvAuthToken"),
+                Token::Some,
+                Token::Bool(true),
+                Token::StructEnd,
+                // 0x05: maxMsgSize
+                Token::U64(0x05),
+                Token::Some,
+                Token::U64(3072),
+                // 0x06: pinUvAuthProtocols
+                Token::U64(0x06),
+                Token::Some,
+                Token::Seq { len: Some(2) },
+                Token::U8(1),
+                Token::U8(0),
+                Token::SeqEnd,
+                // 0x07: maxCredentialCountInList
+                Token::U64(0x07),
+                Token::Some,
+                Token::U64(10),
+                // 0x08: maxCredentialIdLength
+                Token::U64(0x08),
+                Token::Some,
+                Token::U64(255),
+                // 0x09: transports
+                Token::U64(0x09),
+                Token::Some,
+                Token::Seq { len: Some(2) },
+                Token::BorrowedStr("nfc"),
+                Token::BorrowedStr("usb"),
+                Token::SeqEnd,
+                Token::MapEnd,
+            ],
+        );
+    }
+}

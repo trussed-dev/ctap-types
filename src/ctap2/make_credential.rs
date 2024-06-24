@@ -189,6 +189,7 @@ pub struct PackedAttestationStatement {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serde_test::{assert_ser_tokens, Token};
 
     #[test]
     fn rp_entity_icon() {
@@ -199,5 +200,16 @@ mod tests {
         // previously, we called it `url` and should still be able to deserialize it
         let cbor = b"\xa4\x01X \xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\x02\xa2bidx0make_credential_relying_party_entity.example.comcurlohttp://icon.png\x03\xa2bidX \x1d\x1d\x1d\x1d\x1d\x1d\x1d\x1d\x1d\x1d\x1d\x1d\x1d\x1d\x1d\x1d\x1d\x1d\x1d\x1d\x1d\x1d\x1d\x1d\x1d\x1d\x1d\x1d\x1d\x1d\x1d\x1ddnamedAdam\x04\x81\xa2calg&dtypejpublic-key";
         let _request: Request = cbor_smol::cbor_deserialize(cbor.as_slice()).unwrap();
+    }
+
+    #[test]
+    fn test_serde_attestation_statement_format() {
+        let formats = [
+            (AttestationStatementFormat::None, "none"),
+            (AttestationStatementFormat::Packed, "packed"),
+        ];
+        for (format, s) in formats {
+            assert_ser_tokens(&format, &[Token::BorrowedStr(s)]);
+        }
     }
 }
