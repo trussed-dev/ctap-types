@@ -116,6 +116,385 @@ pub struct Response {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+    use hex_literal::hex;
+    use serde_test::{assert_de_tokens, assert_ser_tokens, assert_tokens, Token};
+
+    const KEY_AGREEMENT: &[u8] = &hex!("b174bc49c7ca254b70d2e5c207cee9cf174820ebd77ea3c65508c26da51b657c1cc6b952f8621697936482da0a6d3d3826a59095daf6cd7c03e2e60385d2f6d9");
+    const NEW_PIN_ENC: &[u8] = &[0xde; 64];
+    const PIN_AUTH: &[u8] = &[0xad; 32];
+    const PIN_HASH_ENC: &[u8] = &[0xda; 16];
+    const PIN_TOKEN: &[u8] = &[0xed; 32];
+
+    #[test]
+    fn test_de_request_get_retries() {
+        let request = Request {
+            pin_protocol: 1,
+            sub_command: PinV1Subcommand::GetRetries,
+            key_agreement: None,
+            pin_auth: None,
+            new_pin_enc: None,
+            pin_hash_enc: None,
+            _placeholder07: None,
+            _placeholder08: None,
+            permissions: None,
+            rp_id: None,
+        };
+        assert_tokens(
+            &request,
+            &[
+                Token::Map { len: Some(2) },
+                // 0x01: pinProtocol
+                Token::U64(0x01),
+                Token::U8(1),
+                // 0x02: subCommand
+                Token::U64(0x02),
+                Token::U8(0x01),
+                Token::MapEnd,
+            ],
+        );
+    }
+
+    #[test]
+    fn test_de_request_get_key_agreement() {
+        let request = Request {
+            pin_protocol: 1,
+            sub_command: PinV1Subcommand::GetKeyAgreement,
+            key_agreement: None,
+            pin_auth: None,
+            new_pin_enc: None,
+            pin_hash_enc: None,
+            _placeholder07: None,
+            _placeholder08: None,
+            permissions: None,
+            rp_id: None,
+        };
+        assert_tokens(
+            &request,
+            &[
+                Token::Map { len: Some(2) },
+                // 0x01: pinProtocol
+                Token::U64(0x01),
+                Token::U8(1),
+                // 0x02: subCommand
+                Token::U64(0x02),
+                Token::U8(0x02),
+                Token::MapEnd,
+            ],
+        );
+    }
+
+    #[test]
+    fn test_de_request_set_pin() {
+        let key_agreement = EcdhEsHkdf256PublicKey {
+            x: Bytes::from_slice(&KEY_AGREEMENT[..32]).unwrap(),
+            y: Bytes::from_slice(&KEY_AGREEMENT[32..]).unwrap(),
+        };
+        let request = Request {
+            pin_protocol: 1,
+            sub_command: PinV1Subcommand::SetPin,
+            key_agreement: Some(key_agreement),
+            pin_auth: Some(serde_bytes::Bytes::new(PIN_AUTH)),
+            new_pin_enc: Some(serde_bytes::Bytes::new(NEW_PIN_ENC)),
+            pin_hash_enc: None,
+            _placeholder07: None,
+            _placeholder08: None,
+            permissions: None,
+            rp_id: None,
+        };
+        assert_de_tokens(
+            &request,
+            &[
+                Token::Map { len: Some(5) },
+                // 0x01: pinProtocol
+                Token::U64(0x01),
+                Token::U8(1),
+                // 0x02: subCommand
+                Token::U64(0x02),
+                Token::U8(0x03),
+                // 0x03: keyAgreement
+                Token::U64(0x03),
+                Token::Map { len: Some(5) },
+                //       1: kty
+                Token::I8(1),
+                Token::I8(2),
+                //       3: alg
+                Token::I8(3),
+                Token::I8(-25),
+                //       -1: crv
+                Token::I8(-1),
+                Token::I8(1),
+                //       -2: x
+                Token::I8(-2),
+                Token::BorrowedBytes(&KEY_AGREEMENT[..32]),
+                //       -3: y
+                Token::I8(-3),
+                Token::BorrowedBytes(&KEY_AGREEMENT[32..]),
+                Token::MapEnd,
+                // 0x04: pinUvAuthParam
+                Token::U64(0x04),
+                Token::BorrowedBytes(PIN_AUTH),
+                // 0x05: newPinEnc
+                Token::U64(0x05),
+                Token::BorrowedBytes(NEW_PIN_ENC),
+                Token::MapEnd,
+            ],
+        );
+    }
+
+    #[test]
+    fn test_de_request_change_pin() {
+        let key_agreement = EcdhEsHkdf256PublicKey {
+            x: Bytes::from_slice(&KEY_AGREEMENT[..32]).unwrap(),
+            y: Bytes::from_slice(&KEY_AGREEMENT[32..]).unwrap(),
+        };
+        let request = Request {
+            pin_protocol: 1,
+            sub_command: PinV1Subcommand::ChangePin,
+            key_agreement: Some(key_agreement),
+            pin_auth: Some(serde_bytes::Bytes::new(PIN_AUTH)),
+            new_pin_enc: Some(serde_bytes::Bytes::new(NEW_PIN_ENC)),
+            pin_hash_enc: Some(serde_bytes::Bytes::new(PIN_HASH_ENC)),
+            _placeholder07: None,
+            _placeholder08: None,
+            permissions: None,
+            rp_id: None,
+        };
+        assert_de_tokens(
+            &request,
+            &[
+                Token::Map { len: Some(6) },
+                // 0x01: pinProtocol
+                Token::U64(0x01),
+                Token::U8(1),
+                // 0x02: subCommand
+                Token::U64(0x02),
+                Token::U8(0x04),
+                // 0x03: keyAgreement
+                Token::U64(0x03),
+                Token::Map { len: Some(5) },
+                //       1: kty
+                Token::I8(1),
+                Token::I8(2),
+                //       3: alg
+                Token::I8(3),
+                Token::I8(-25),
+                //       -1: crv
+                Token::I8(-1),
+                Token::I8(1),
+                //       -2: x
+                Token::I8(-2),
+                Token::BorrowedBytes(&KEY_AGREEMENT[..32]),
+                //       -3: y
+                Token::I8(-3),
+                Token::BorrowedBytes(&KEY_AGREEMENT[32..]),
+                Token::MapEnd,
+                // 0x04: pinUvAuthParam
+                Token::U64(0x04),
+                Token::BorrowedBytes(PIN_AUTH),
+                // 0x05: newPinEnc
+                Token::U64(0x05),
+                Token::BorrowedBytes(NEW_PIN_ENC),
+                // 0x06: pinHashEnc
+                Token::U64(0x06),
+                Token::BorrowedBytes(PIN_HASH_ENC),
+                Token::MapEnd,
+            ],
+        );
+    }
+
+    #[test]
+    fn test_de_get_pin_token() {
+        let key_agreement = EcdhEsHkdf256PublicKey {
+            x: Bytes::from_slice(&KEY_AGREEMENT[..32]).unwrap(),
+            y: Bytes::from_slice(&KEY_AGREEMENT[32..]).unwrap(),
+        };
+        let request = Request {
+            pin_protocol: 1,
+            sub_command: PinV1Subcommand::GetPinToken,
+            key_agreement: Some(key_agreement),
+            pin_auth: None,
+            new_pin_enc: None,
+            pin_hash_enc: Some(serde_bytes::Bytes::new(PIN_HASH_ENC)),
+            _placeholder07: None,
+            _placeholder08: None,
+            permissions: None,
+            rp_id: None,
+        };
+        assert_de_tokens(
+            &request,
+            &[
+                Token::Map { len: Some(4) },
+                // 0x01: pinProtocol
+                Token::U64(0x01),
+                Token::U8(1),
+                // 0x02: subCommand
+                Token::U64(0x02),
+                Token::U8(0x05),
+                // 0x03: keyAgreement
+                Token::U64(0x03),
+                Token::Map { len: Some(5) },
+                //       1: kty
+                Token::I8(1),
+                Token::I8(2),
+                //       3: alg
+                Token::I8(3),
+                Token::I8(-25),
+                //       -1: crv
+                Token::I8(-1),
+                Token::I8(1),
+                //       -2: x
+                Token::I8(-2),
+                Token::BorrowedBytes(&KEY_AGREEMENT[..32]),
+                //       -3: y
+                Token::I8(-3),
+                Token::BorrowedBytes(&KEY_AGREEMENT[32..]),
+                Token::MapEnd,
+                // 0x06: pinHashEnc
+                Token::U64(0x06),
+                Token::BorrowedBytes(PIN_HASH_ENC),
+                Token::MapEnd,
+            ],
+        );
+    }
+
+    #[test]
+    fn test_de_get_pin_token_with_permissions() {
+        let key_agreement = EcdhEsHkdf256PublicKey {
+            x: Bytes::from_slice(&KEY_AGREEMENT[..32]).unwrap(),
+            y: Bytes::from_slice(&KEY_AGREEMENT[32..]).unwrap(),
+        };
+        let request = Request {
+            pin_protocol: 1,
+            sub_command: PinV1Subcommand::GetPinUvAuthTokenUsingPinWithPermissions,
+            key_agreement: Some(key_agreement),
+            pin_auth: None,
+            new_pin_enc: None,
+            pin_hash_enc: Some(serde_bytes::Bytes::new(PIN_HASH_ENC)),
+            _placeholder07: None,
+            _placeholder08: None,
+            permissions: Some(0x04),
+            rp_id: Some("example.com"),
+        };
+        assert_de_tokens(
+            &request,
+            &[
+                Token::Map { len: Some(6) },
+                // 0x01: pinProtocol
+                Token::U64(0x01),
+                Token::U8(1),
+                // 0x02: subCommand
+                Token::U64(0x02),
+                Token::U8(0x09),
+                // 0x03: keyAgreement
+                Token::U64(0x03),
+                Token::Map { len: Some(5) },
+                //       1: kty
+                Token::I8(1),
+                Token::I8(2),
+                //       3: alg
+                Token::I8(3),
+                Token::I8(-25),
+                //       -1: crv
+                Token::I8(-1),
+                Token::I8(1),
+                //       -2: x
+                Token::I8(-2),
+                Token::BorrowedBytes(&KEY_AGREEMENT[..32]),
+                //       -3: y
+                Token::I8(-3),
+                Token::BorrowedBytes(&KEY_AGREEMENT[32..]),
+                Token::MapEnd,
+                // 0x06: pinHashEnc
+                Token::U64(0x06),
+                Token::BorrowedBytes(PIN_HASH_ENC),
+                // 0x09: permissions
+                Token::U64(0x09),
+                Token::U8(0x04),
+                // 0x0A: rpId
+                Token::U64(0x0A),
+                Token::BorrowedStr("example.com"),
+                Token::MapEnd,
+            ],
+        );
+    }
+
+    #[test]
+    fn test_ser_response_get_retries() {
+        let response = Response {
+            retries: Some(3),
+            ..Default::default()
+        };
+        assert_ser_tokens(
+            &response,
+            &[
+                Token::Map { len: Some(1) },
+                // 0x03: pinRetries
+                Token::U64(0x03),
+                Token::Some,
+                Token::U8(3),
+                Token::MapEnd,
+            ],
+        );
+    }
+
+    #[test]
+    fn test_ser_response_get_key_agreement() {
+        let key_agreement = EcdhEsHkdf256PublicKey {
+            x: Bytes::from_slice(&KEY_AGREEMENT[..32]).unwrap(),
+            y: Bytes::from_slice(&KEY_AGREEMENT[32..]).unwrap(),
+        };
+        let response = Response {
+            key_agreement: Some(key_agreement),
+            ..Default::default()
+        };
+        assert_ser_tokens(
+            &response,
+            &[
+                Token::Map { len: Some(1) },
+                // 0x01: keyAgreement
+                Token::U64(0x01),
+                Token::Some,
+                Token::Map { len: Some(5) },
+                //       1: kty
+                Token::I8(1),
+                Token::I8(2),
+                //       3: alg
+                Token::I8(3),
+                Token::I8(-25),
+                //       -1: crv
+                Token::I8(-1),
+                Token::I8(1),
+                //       -2: x
+                Token::I8(-2),
+                Token::BorrowedBytes(&KEY_AGREEMENT[..32]),
+                //       -3: y
+                Token::I8(-3),
+                Token::BorrowedBytes(&KEY_AGREEMENT[32..]),
+                Token::MapEnd,
+                Token::MapEnd,
+            ],
+        );
+    }
+
+    #[test]
+    fn test_ser_response_get_pin_token() {
+        let response = Response {
+            pin_token: Some(Bytes::from_slice(PIN_TOKEN).unwrap()),
+            ..Default::default()
+        };
+        assert_ser_tokens(
+            &response,
+            &[
+                Token::Map { len: Some(1) },
+                // 0x02: pinAuvAuthToken
+                Token::U64(0x02),
+                Token::Some,
+                Token::BorrowedBytes(PIN_TOKEN),
+                Token::MapEnd,
+            ],
+        );
+    }
 
     #[test]
     fn pin_v1_subcommand() {
@@ -127,7 +506,7 @@ mod tests {
         // to CBOR would output) is 0.
         // The following test would then fail, as [1] != [2]
         let mut buf = [0u8; 64];
-        let example = super::PinV1Subcommand::GetKeyAgreement;
+        let example = PinV1Subcommand::GetKeyAgreement;
         let ser = crate::serde::cbor_serialize(&example, &mut buf).unwrap();
         assert_eq!(ser, &[0x02]);
     }
