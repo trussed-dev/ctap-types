@@ -20,6 +20,7 @@ pub mod make_credential;
 pub type Result<T> = core::result::Result<T, Error>;
 
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
 #[non_exhaustive]
 #[allow(clippy::large_enum_variant)]
 // clippy says...large size difference
@@ -178,6 +179,7 @@ impl Response {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
 #[non_exhaustive]
 pub struct AuthenticatorOptions {
     #[serde(skip_serializing_if = "Option::is_none")]

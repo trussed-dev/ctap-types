@@ -1,5 +1,6 @@
 /// the authenticator API, consisting of "operations"
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
 pub enum Operation {
     MakeCredential,
     GetAssertion,
@@ -49,6 +50,7 @@ impl Operation {
 
 /// Vendor CTAP2 operations, from 0x40 to 0x7f.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
 pub struct VendorOperation(u8);
 
 impl VendorOperation {

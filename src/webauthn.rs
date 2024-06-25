@@ -29,6 +29,7 @@ pub struct PublicKeyCredentialRpEntity {
 /// This field must be parsed but not used or stored.  Therefore this wrapper type can be
 /// deserialized from a string but does not store any data.
 #[derive(Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
 pub struct Icon;
 
 impl<'de> Deserialize<'de> for Icon {

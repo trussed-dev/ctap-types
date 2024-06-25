@@ -5,6 +5,7 @@ use serde_indexed::{DeserializeIndexed, SerializeIndexed};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize_repr, Deserialize_repr)]
+#[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
 #[non_exhaustive]
 #[repr(u8)]
 pub enum PinV1Subcommand {
@@ -72,11 +73,11 @@ pub struct Request<'a> {
 
     // 0x07
     #[serde(skip_serializing_if = "Option::is_none")]
-    _placeholder07: Option<()>,
+    pub(crate) _placeholder07: Option<()>,
 
     // 0x08
     #[serde(skip_serializing_if = "Option::is_none")]
-    _placeholder08: Option<()>,
+    pub(crate) _placeholder08: Option<()>,
 
     // 0x09
     // Bitfield of permissions

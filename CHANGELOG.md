@@ -14,6 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Introduce `Version`, `Extension` and `Transport` enums and use them in `ctap2::get_info`
   - Fix serialization of the `AttestationStatementFormat` enum and use it in `ctap2::make_credential`
 
+### Added
+
+- Add a `std` feature (disabled by default)
+- Add `arbitrary::Arbitrary` implementations for all requests behind an `arbitrary` feature (disabled by default)
+
 ## [0.2.0] - 2024-06-21
 
 [0.2.0]: https://github.com/trussed-dev/ctap-types/compare/0.1.2...0.2.0

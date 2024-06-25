@@ -16,9 +16,27 @@ jobs:
     - name: Check library
       run: |
         cargo check
+        cargo check --features arbitrary
         cargo check --features get-info-full
         cargo check --features large-blobs
         cargo check --all-features
+
+  build-no-std:
+    name: Check library (no-std)
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: stable
+        target: x86_64-unknown-linux-gnu
+        override: true
+    - name: Check library (no-std)
+      run: |
+        cargo check
+        cargo check --features get-info-full
+        cargo check --features large-blobs
 
   test:
     name: Run tests

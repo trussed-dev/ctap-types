@@ -18,6 +18,7 @@ pub enum CredentialProtectionPolicy {
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize_repr, Deserialize_repr)]
+#[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
 #[non_exhaustive]
 #[repr(u8)]
 pub enum Subcommand {

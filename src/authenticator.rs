@@ -7,6 +7,7 @@ pub use ctap1::Authenticator as Ctap1Authenticator;
 pub use ctap2::Authenticator as Ctap2Authenticator;
 
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
 // clippy says (2022-02-26): large size difference
 // - first is 88 bytes
 // - second is 10456 bytes

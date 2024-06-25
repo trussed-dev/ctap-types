@@ -72,6 +72,7 @@ pub mod register {
 
 #[repr(u8)]
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
 pub enum ControlByte {
     // Conor:
     // I think U2F check-only maps to FIDO2 MakeCredential with the credID in the excludeList,
@@ -109,6 +110,7 @@ pub type RegisterResponse = register::Response;
 pub type AuthenticateResponse = authenticate::Response;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
 #[allow(clippy::large_enum_variant)]
 /// Enum of all CTAP1 requests.
 pub enum Request<'a> {

@@ -1,4 +1,4 @@
-#![cfg_attr(not(test), no_std)]
+#![cfg_attr(all(not(test), not(feature = "std")), no_std)]
 // #![no_std]
 
 //! `ctap-types` maps the various types involved in the FIDO CTAP protocol
@@ -25,6 +25,8 @@ pub use heapless_bytes;
 pub use heapless_bytes::Bytes;
 pub use serde_bytes::ByteArray;
 
+#[cfg(feature = "arbitrary")]
+mod arbitrary;
 pub mod authenticator;
 pub mod ctap1;
 pub mod ctap2;

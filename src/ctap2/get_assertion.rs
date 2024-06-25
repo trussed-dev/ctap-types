@@ -21,6 +21,7 @@ pub struct HmacSecretInput {
 }
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
 #[non_exhaustive]
 pub struct ExtensionsInput {
     #[serde(rename = "hmac-secret")]
