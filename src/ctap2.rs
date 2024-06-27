@@ -259,7 +259,7 @@ pub enum AttestationStatement {
     Packed(PackedAttestationStatement),
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
 #[non_exhaustive]
 #[serde(into = "&str", try_from = "&str")]
