@@ -158,9 +158,13 @@ pub enum UnknownPKCredentialParam {
 pub const ES256: i32 = -7;
 /// EdDSA
 pub const ED_DSA: i32 = -8;
+/// Dilithium2
+pub const DILITHIUM2: i32 = -87;
+pub const DILITHIUM3: i32 = -88;
+pub const DILITHIUM5: i32 = -89;
 
-pub const COUNT_KNOWN_ALGS: usize = 2;
-pub const KNOWN_ALGS: [i32; COUNT_KNOWN_ALGS] = [ES256, ED_DSA];
+pub const COUNT_KNOWN_ALGS: usize = 5;
+pub const KNOWN_ALGS: [i32; COUNT_KNOWN_ALGS] = [ES256, ED_DSA, DILITHIUM2, DILITHIUM3, DILITHIUM5];
 
 impl TryFrom<PublicKeyCredentialParameters> for KnownPublicKeyCredentialParameters {
     type Error = UnknownPKCredentialParam;
