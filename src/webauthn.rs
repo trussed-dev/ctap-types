@@ -159,12 +159,39 @@ pub const ES256: i32 = -7;
 /// EdDSA
 pub const ED_DSA: i32 = -8;
 /// Dilithium2
+#[cfg(feature = "backend-dilithium2")]
 pub const DILITHIUM2: i32 = -87;
+#[cfg(feature = "backend-dilithium3")]
 pub const DILITHIUM3: i32 = -88;
+#[cfg(feature = "backend-dilithium5")]
 pub const DILITHIUM5: i32 = -89;
 
-pub const COUNT_KNOWN_ALGS: usize = 5;
-pub const KNOWN_ALGS: [i32; COUNT_KNOWN_ALGS] = [ES256, ED_DSA, DILITHIUM2, DILITHIUM3, DILITHIUM5];
+// Dynamically calculate the number of different known algorithms
+pub const COUNT_KNOWN_ALGS: usize =
+    2 + (if cfg!(feature = "backend-dilithium2") {
+        1
+    } else {
+        0
+    }) + (if cfg!(feature = "backend-dilithium3") {
+        1
+    } else {
+        0
+    }) + (if cfg!(feature = "backend-dilithium5") {
+        1
+    } else {
+        0
+    });
+
+pub const KNOWN_ALGS: [i32; COUNT_KNOWN_ALGS] = [
+    ES256,
+    ED_DSA,
+    #[cfg(feature = "backend-dilithium2")]
+    DILITHIUM2,
+    #[cfg(feature = "backend-dilithium3")]
+    DILITHIUM3,
+    #[cfg(feature = "backend-dilithium5")]
+    DILITHIUM5,
+];
 
 impl TryFrom<PublicKeyCredentialParameters> for KnownPublicKeyCredentialParameters {
     type Error = UnknownPKCredentialParam;

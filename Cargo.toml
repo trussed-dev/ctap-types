@@ -36,6 +36,10 @@ get-info-full = []
 large-blobs = []
 third-party-payment = []
 
+backend-dilithium2 = []
+backend-dilithium3 = []
+backend-dilithium5 = []
+
 log-all = []
 log-none = []
 log-info = []
