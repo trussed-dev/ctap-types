@@ -6,7 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/trussed-dev/ctap-types/compare/0.3.0...HEAD
+[Unreleased]: https://github.com/trussed-dev/ctap-types/compare/0.3.1...HEAD
+
+## [0.3.1] 2024-10-18
+
+[0.3.1]: https://github.com/trussed-dev/ctap-types/compare/0.3.0...0.3.1
+
+### Added
+
+- Implement `TryFrom<iso7816::command::CommandView<'a>>` for `Request<'a>`
 
 ## [0.3.0] 2024-08-01
 

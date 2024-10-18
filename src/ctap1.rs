@@ -156,8 +156,15 @@ impl Response {
 
 impl<'a, const S: usize> TryFrom<&'a iso7816::Command<S>> for Request<'a> {
     type Error = Error;
-    #[inline(never)]
     fn try_from(apdu: &'a iso7816::Command<S>) -> Result<Request> {
+        apdu.as_view().try_into()
+    }
+}
+
+impl<'a> TryFrom<iso7816::command::CommandView<'a>> for Request<'a> {
+    type Error = Error;
+    #[inline(never)]
+    fn try_from(apdu: iso7816::command::CommandView<'a>) -> Result<Request> {
         let cla = apdu.class().into_inner();
         let ins = match apdu.instruction() {
             iso7816::Instruction::Unknown(ins) => ins,
