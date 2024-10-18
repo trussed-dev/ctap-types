@@ -459,9 +459,8 @@ pub trait Authenticator {
             Request::MakeCredential(request) => {
                 debug_now!("CTAP2.MC");
                 Ok(Response::MakeCredential(
-                    self.make_credential(request).map_err(|e| {
-                        debug!("error: {:?}", e);
-                        e
+                    self.make_credential(request).inspect_err(|_e| {
+                        debug!("error: {:?}", _e);
                     })?,
                 ))
             }
@@ -470,9 +469,8 @@ pub trait Authenticator {
             Request::GetAssertion(request) => {
                 debug_now!("CTAP2.GA");
                 Ok(Response::GetAssertion(
-                    self.get_assertion(request).map_err(|e| {
-                        debug!("error: {:?}", e);
-                        e
+                    self.get_assertion(request).inspect_err(|_e| {
+                        debug!("error: {:?}", _e);
                     })?,
                 ))
             }
@@ -481,9 +479,8 @@ pub trait Authenticator {
             Request::GetNextAssertion => {
                 debug_now!("CTAP2.GNA");
                 Ok(Response::GetNextAssertion(
-                    self.get_next_assertion().map_err(|e| {
-                        debug!("error: {:?}", e);
-                        e
+                    self.get_next_assertion().inspect_err(|_e| {
+                        debug!("error: {:?}", _e);
                     })?,
                 ))
             }
@@ -491,9 +488,8 @@ pub trait Authenticator {
             // 0x7
             Request::Reset => {
                 debug_now!("CTAP2.RST");
-                self.reset().map_err(|e| {
-                    debug!("error: {:?}", e);
-                    e
+                self.reset().inspect_err(|_e| {
+                    debug!("error: {:?}", _e);
                 })?;
                 Ok(Response::Reset)
             }
@@ -501,10 +497,9 @@ pub trait Authenticator {
             // 0x6
             Request::ClientPin(request) => {
                 debug_now!("CTAP2.PIN");
-                Ok(Response::ClientPin(self.client_pin(request).map_err(
-                    |e| {
-                        debug!("error: {:?}", e);
-                        e
+                Ok(Response::ClientPin(self.client_pin(request).inspect_err(
+                    |_e| {
+                        debug!("error: {:?}", _e);
                     },
                 )?))
             }
@@ -513,9 +508,8 @@ pub trait Authenticator {
             Request::CredentialManagement(request) => {
                 debug_now!("CTAP2.CM");
                 Ok(Response::CredentialManagement(
-                    self.credential_management(request).map_err(|e| {
-                        debug!("error: {:?}", e);
-                        e
+                    self.credential_management(request).inspect_err(|_e| {
+                        debug!("error: {:?}", _e);
                     })?,
                 ))
             }
@@ -523,9 +517,8 @@ pub trait Authenticator {
             // 0xB
             Request::Selection => {
                 debug_now!("CTAP2.SEL");
-                self.selection().map_err(|e| {
-                    debug!("error: {:?}", e);
-                    e
+                self.selection().inspect_err(|_e| {
+                    debug!("error: {:?}", _e);
                 })?;
                 Ok(Response::Selection)
             }
@@ -533,20 +526,18 @@ pub trait Authenticator {
             // 0xC
             Request::LargeBlobs(request) => {
                 debug_now!("CTAP2.LB");
-                Ok(Response::LargeBlobs(self.large_blobs(request).map_err(
-                    |e| {
-                        debug!("error: {:?}", e);
-                        e
-                    },
-                )?))
+                Ok(Response::LargeBlobs(
+                    self.large_blobs(request).inspect_err(|_e| {
+                        debug!("error: {:?}", _e);
+                    })?,
+                ))
             }
 
             // Not stable
             Request::Vendor(op) => {
                 debug_now!("CTAP2.V");
-                self.vendor(*op).map_err(|e| {
-                    debug!("error: {:?}", e);
-                    e
+                self.vendor(*op).inspect_err(|_e| {
+                    debug!("error: {:?}", _e);
                 })?;
                 Ok(Response::Vendor)
             }
