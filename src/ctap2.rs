@@ -242,8 +242,7 @@ impl<'a, A: SerializeAttestedCredentialData, E: serde::Serialize> AuthenticatorD
 
         // the extensions data
         if let Some(extensions) = self.extensions.as_ref() {
-            cbor_smol::cbor_serialize_extending_bytes(extensions, &mut bytes)
-                .map_err(|_| Error::Other)?;
+            cbor_smol::cbor_serialize_to(extensions, &mut bytes).map_err(|_| Error::Other)?;
         }
 
         Ok(bytes)

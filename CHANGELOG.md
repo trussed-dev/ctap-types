@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased]: https://github.com/trussed-dev/ctap-types/compare/0.3.1...HEAD
 
+### Changed
+
+- Update `cbor-smol` dependency to v0.5.0
+
 ## [0.3.1] 2024-10-18
 
 [0.3.1]: https://github.com/trussed-dev/ctap-types/compare/0.3.0...0.3.1

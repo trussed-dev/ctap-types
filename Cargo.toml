@@ -10,7 +10,7 @@ repository = "https://github.com/trussed-dev/ctap-types"
 [dependencies]
 arbitrary = { version = "1.3.2", features = ["derive"], optional = true }
 bitflags = "1.3"
-cbor-smol = "0.4"
+cbor-smol = { version = "0.5", features = ["heapless-bytes-v0-3"] }
 cosey = "0.3.1"
 delog = "0.1"
 heapless = { version = "0.7", default-features = false, features = ["serde"] }
