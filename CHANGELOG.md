@@ -6,7 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/trussed-dev/ctap-types/compare/0.3.1...HEAD
+[Unreleased]: https://github.com/trussed-dev/ctap-types/compare/0.3.2...HEAD
+
+-
+
+## [0.3.2] 2024-10-24
+
+[0.3.2]: https://github.com/trussed-dev/ctap-types/compare/0.3.1...0.3.2
 
 ### Changed
 
