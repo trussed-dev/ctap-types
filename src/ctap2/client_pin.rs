@@ -41,8 +41,8 @@ bitflags! {
 pub struct Request<'a> {
     // 0x01
     // PIN protocol version chosen by the client.
-    // For this version of the spec, this SHALL be the number 1.
-    pub pin_protocol: u8,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pin_protocol: Option<u8>,
 
     // 0x02
     // The authenticator Client PIN sub command currently being requested
@@ -119,7 +119,7 @@ pub struct Response {
 mod tests {
     use super::*;
     use hex_literal::hex;
-    use serde_test::{assert_de_tokens, assert_ser_tokens, assert_tokens, Token};
+    use serde_test::{assert_de_tokens, assert_ser_tokens, Token};
 
     const KEY_AGREEMENT: &[u8] = &hex!("b174bc49c7ca254b70d2e5c207cee9cf174820ebd77ea3c65508c26da51b657c1cc6b952f8621697936482da0a6d3d3826a59095daf6cd7c03e2e60385d2f6d9");
     const NEW_PIN_ENC: &[u8] = &[0xde; 64];
@@ -130,7 +130,7 @@ mod tests {
     #[test]
     fn test_de_request_get_retries() {
         let request = Request {
-            pin_protocol: 1,
+            pin_protocol: Some(1),
             sub_command: PinV1Subcommand::GetRetries,
             key_agreement: None,
             pin_auth: None,
@@ -141,7 +141,7 @@ mod tests {
             permissions: None,
             rp_id: None,
         };
-        assert_tokens(
+        assert_de_tokens(
             &request,
             &[
                 Token::Map { len: Some(2) },
@@ -159,7 +159,7 @@ mod tests {
     #[test]
     fn test_de_request_get_key_agreement() {
         let request = Request {
-            pin_protocol: 1,
+            pin_protocol: Some(1),
             sub_command: PinV1Subcommand::GetKeyAgreement,
             key_agreement: None,
             pin_auth: None,
@@ -170,7 +170,7 @@ mod tests {
             permissions: None,
             rp_id: None,
         };
-        assert_tokens(
+        assert_de_tokens(
             &request,
             &[
                 Token::Map { len: Some(2) },
@@ -192,7 +192,7 @@ mod tests {
             y: Bytes::from_slice(&KEY_AGREEMENT[32..]).unwrap(),
         };
         let request = Request {
-            pin_protocol: 1,
+            pin_protocol: Some(1),
             sub_command: PinV1Subcommand::SetPin,
             key_agreement: Some(key_agreement),
             pin_auth: Some(serde_bytes::Bytes::new(PIN_AUTH)),
@@ -250,7 +250,7 @@ mod tests {
             y: Bytes::from_slice(&KEY_AGREEMENT[32..]).unwrap(),
         };
         let request = Request {
-            pin_protocol: 1,
+            pin_protocol: Some(1),
             sub_command: PinV1Subcommand::ChangePin,
             key_agreement: Some(key_agreement),
             pin_auth: Some(serde_bytes::Bytes::new(PIN_AUTH)),
@@ -311,7 +311,7 @@ mod tests {
             y: Bytes::from_slice(&KEY_AGREEMENT[32..]).unwrap(),
         };
         let request = Request {
-            pin_protocol: 1,
+            pin_protocol: Some(1),
             sub_command: PinV1Subcommand::GetPinToken,
             key_agreement: Some(key_agreement),
             pin_auth: None,
@@ -366,7 +366,7 @@ mod tests {
             y: Bytes::from_slice(&KEY_AGREEMENT[32..]).unwrap(),
         };
         let request = Request {
-            pin_protocol: 1,
+            pin_protocol: Some(1),
             sub_command: PinV1Subcommand::GetPinUvAuthTokenUsingPinWithPermissions,
             key_agreement: Some(key_agreement),
             pin_auth: None,

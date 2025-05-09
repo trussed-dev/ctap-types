@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased]: https://github.com/trussed-dev/ctap-types/compare/0.3.2...HEAD
 
--
+- Make `pin_protocol` optional in `ctap2::client_pin::Request` for compliance with CTAP 2.1.
 
 ## [0.3.2] 2024-10-24
 
