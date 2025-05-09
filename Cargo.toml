@@ -38,6 +38,7 @@ third-party-payment = []
 
 log-all = []
 log-none = []
+log-trace = []
 log-info = []
 log-debug = []
 log-warn = []
