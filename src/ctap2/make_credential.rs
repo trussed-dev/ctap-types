@@ -87,7 +87,7 @@ pub struct AttestedCredentialData<'a> {
     pub credential_public_key: &'a [u8],
 }
 
-impl<'a> super::SerializeAttestedCredentialData for AttestedCredentialData<'a> {
+impl super::SerializeAttestedCredentialData for AttestedCredentialData<'_> {
     fn serialize(&self, buffer: &mut super::SerializedAuthenticatorData) -> Result<(), Error> {
         // TODO: validate lengths of credential ID and credential public key
         // 16 bytes, the aaguid

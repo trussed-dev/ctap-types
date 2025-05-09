@@ -219,7 +219,7 @@ pub type SerializedAuthenticatorData = Bytes<AUTHENTICATOR_DATA_LENGTH>;
 
 // The reason for this non-use of CBOR is for compatibility with
 // FIDO U2F authentication signatures.
-impl<'a, A: SerializeAttestedCredentialData, E: serde::Serialize> AuthenticatorData<'a, A, E> {
+impl<A: SerializeAttestedCredentialData, E: serde::Serialize> AuthenticatorData<'_, A, E> {
     #[inline(never)]
     pub fn serialize(&self) -> Result<SerializedAuthenticatorData> {
         let mut bytes = SerializedAuthenticatorData::new();
@@ -544,7 +544,7 @@ pub trait Authenticator {
     }
 }
 
-impl<'a, A: Authenticator> crate::Rpc<Error, Request<'a>, Response> for A {
+impl<A: Authenticator> crate::Rpc<Error, Request<'_>, Response> for A {
     /// Dispatches the enum of possible requests into the appropriate trait method.
     #[inline(never)]
     fn call(&mut self, request: &Request) -> Result<Response> {
