@@ -6,6 +6,7 @@ use bitflags::bitflags;
 use cbor_smol::cbor_deserialize;
 use serde::{Deserialize, Serialize};
 
+use crate::sizes::MAX_MESSAGE_LENGTH;
 use crate::{sizes::*, Bytes, TryFromStrError, Vec};
 
 pub use crate::operation::{Operation, VendorOperation};
@@ -301,7 +302,7 @@ pub struct PackedAttestationStatement {
     pub alg: i32,
     pub sig: Bytes<ASN1_SIGNATURE_LENGTH>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub x5c: Option<Vec<Bytes<1024>, 1>>,
+    pub x5c: Option<Vec<Bytes<MAX_MESSAGE_LENGTH>, 1>>,
 }
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]

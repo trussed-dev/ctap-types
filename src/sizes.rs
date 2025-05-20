@@ -1,13 +1,10 @@
-pub const AUTHENTICATOR_DATA_LENGTH: usize = 676;
 // pub const AUTHENTICATOR_DATA_LENGTH_BYTES: usize = 512;
 
-pub const ASN1_SIGNATURE_LENGTH: usize = 77;
 // pub const ASN1_SIGNATURE_LENGTH_BYTES: usize = 72;
 
 pub const COSE_KEY_LENGTH: usize = 256;
 // pub const COSE_KEY_LENGTH_BYTES: usize = 256;
 
-pub const MAX_CREDENTIAL_ID_LENGTH: usize = 255;
 pub const MAX_CREDENTIAL_ID_LENGTH_PLUS_256: usize = 767;
 pub const MAX_CREDENTIAL_COUNT_IN_LIST: usize = 10;
 
@@ -30,3 +27,30 @@ pub const THEORETICAL_MAX_MESSAGE_SIZE: usize = PACKET_SIZE - 7 + 128 * (PACKET_
 pub const LARGE_BLOB_MAX_FRAGMENT_LENGTH: usize = 0;
 #[cfg(feature = "large-blobs")]
 pub const LARGE_BLOB_MAX_FRAGMENT_LENGTH: usize = 3008;
+
+// TODO: update these, and grab them from a common crate?
+cfg_if::cfg_if! {
+    if #[cfg(feature = "mldsa87")] {
+        pub const MAX_MESSAGE_LENGTH: usize = MAX_COMMITTMENT_LENGTH;
+        pub const MAX_CREDENTIAL_ID_LENGTH: usize = 7523 + 57 + 30 + 37;
+        pub const AUTHENTICATOR_DATA_LENGTH: usize = MAX_CREDENTIAL_ID_LENGTH + 2031; // TODO: this will have to be larger
+        pub const ASN1_SIGNATURE_LENGTH: usize = 4627;
+    } else if #[cfg(feature = "mldsa65")] {
+        pub const MAX_MESSAGE_LENGTH: usize = MAX_COMMITTMENT_LENGTH;
+        pub const MAX_CREDENTIAL_ID_LENGTH: usize =  6019 + 57 + 30 + 37;
+        pub const AUTHENTICATOR_DATA_LENGTH: usize = MAX_CREDENTIAL_ID_LENGTH + 2031;
+        pub const ASN1_SIGNATURE_LENGTH: usize = 3309;
+    } else if #[cfg(feature = "mldsa44")] {
+        pub const MAX_MESSAGE_LENGTH: usize = MAX_COMMITTMENT_LENGTH;
+        pub const MAX_CREDENTIAL_ID_LENGTH: usize = 3907 + 57 + 30 + 37;
+        pub const AUTHENTICATOR_DATA_LENGTH: usize = MAX_CREDENTIAL_ID_LENGTH + 2031; // TODO: this can be smaller
+        pub const ASN1_SIGNATURE_LENGTH: usize = 2420;
+    } else {
+        pub const MAX_MESSAGE_LENGTH: usize = 1024;
+        pub const MAX_CREDENTIAL_ID_LENGTH: usize = 255;
+        pub const AUTHENTICATOR_DATA_LENGTH: usize = 676;
+        pub const ASN1_SIGNATURE_LENGTH: usize = 77;
+    }
+}
+
+pub const MAX_COMMITTMENT_LENGTH: usize = AUTHENTICATOR_DATA_LENGTH + 32;
