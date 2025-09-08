@@ -131,25 +131,24 @@ pub enum Response {
 impl Response {
     #[allow(clippy::result_unit_err)]
     #[inline(never)]
-    pub fn serialize<const S: usize>(
-        &self,
-        buf: &mut iso7816::Data<S>,
-    ) -> core::result::Result<(), ()> {
+    pub fn serialize(&self, buf: &mut heapless::VecView<u8>) -> core::result::Result<(), ()> {
         match self {
             Response::Register(reg) => {
                 buf.push(reg.header_byte).map_err(drop)?;
-                buf.extend_from_slice(&reg.public_key)?;
+                buf.extend_from_slice(&reg.public_key).map_err(drop)?;
                 buf.push(reg.key_handle.len() as u8).map_err(drop)?;
-                buf.extend_from_slice(&reg.key_handle)?;
-                buf.extend_from_slice(&reg.attestation_certificate)?;
-                buf.extend_from_slice(&reg.signature)
+                buf.extend_from_slice(&reg.key_handle).map_err(drop)?;
+                buf.extend_from_slice(&reg.attestation_certificate)
+                    .map_err(drop)?;
+                buf.extend_from_slice(&reg.signature).map_err(drop)
             }
             Response::Authenticate(auth) => {
                 buf.push(auth.user_presence).map_err(drop)?;
-                buf.extend_from_slice(&auth.count.to_be_bytes())?;
-                buf.extend_from_slice(&auth.signature)
+                buf.extend_from_slice(&auth.count.to_be_bytes())
+                    .map_err(drop)?;
+                buf.extend_from_slice(&auth.signature).map_err(drop)
             }
-            Response::Version(version) => buf.extend_from_slice(version),
+            Response::Version(version) => buf.extend_from_slice(version).map_err(drop),
         }
     }
 }
@@ -314,15 +313,15 @@ mod tests {
     fn test_register_response() {
         let public_key = hex!("b174bc49c7ca254b70d2e5c207cee9cf174820ebd77ea3c65508c26da51b657c1cc6b952f8621697936482da0a6d3d3826a59095daf6cd7c03e2e60385d2f6d9");
         let public_key = cosey::EcdhEsHkdf256PublicKey {
-            x: Bytes::from_slice(&public_key[..32]).unwrap(),
-            y: Bytes::from_slice(&public_key[32..]).unwrap(),
+            x: Bytes::try_from(&public_key[..32]).unwrap(),
+            y: Bytes::try_from(&public_key[32..]).unwrap(),
         };
         let key_handle = hex!("2a552dfdb7477ed65fd84133f86196010b2215b57da75d315b7b9e8fe2e3925a6019551bab61d16591659cbaf00b4950f7abfe6660e2e006f76868b772d70c25");
-        let key_handle = Bytes::from_slice(&key_handle).unwrap();
+        let key_handle = Bytes::try_from(&key_handle).unwrap();
         let signature = hex!("304502201471899bcc3987e62e8202c9b39c33c19033f7340352dba80fcab017db9230e402210082677d673d891933ade6f617e5dbde2e247e70423fd5ad7804a6d3d3961ef871");
-        let signature = Bytes::from_slice(&signature).unwrap();
+        let signature = Bytes::try_from(&signature).unwrap();
         let attestation_certificate = hex!("3082013c3081e4a003020102020a47901280001155957352300a06082a8648ce3d0403023017311530130603550403130c476e756262792050696c6f74301e170d3132303831343138323933325a170d3133303831343138323933325a3031312f302d0603550403132650696c6f74476e756262792d302e342e312d34373930313238303030313135353935373335323059301306072a8648ce3d020106082a8648ce3d030107034200048d617e65c9508e64bcc5673ac82a6799da3c1446682c258c463fffdf58dfd2fa3e6c378b53d795c4a4dffb4199edd7862f23abaf0203b4b8911ba0569994e101300a06082a8648ce3d0403020347003044022060cdb6061e9c22262d1aac1d96d8c70829b2366531dda268832cb836bcd30dfa0220631b1459f09e6330055722c8d89b7f48883b9089b88d60d1d9795902b30410df");
-        let attestation_certificate = Bytes::from_slice(&attestation_certificate).unwrap();
+        let attestation_certificate = Bytes::try_from(&attestation_certificate).unwrap();
         let response = register::Response::new(
             0x05,
             &public_key,
@@ -371,7 +370,7 @@ mod tests {
     #[test]
     fn test_authenticate_response() {
         let signature = &hex!("304402204b5f0cd17534cedd8c34ee09570ef542a353df4436030ce43d406de870b847780220267bb998fac9b7266eb60e7cb0b5eabdfd5ba9614f53c7b22272ec10047a923f");
-        let signature = Bytes::from_slice(signature).unwrap();
+        let signature = Bytes::try_from(signature).unwrap();
         let response = authenticate::Response {
             user_presence: 1,
             count: 1,

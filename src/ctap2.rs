@@ -4,9 +4,10 @@
 //! [`Response`].
 use bitflags::bitflags;
 use cbor_smol::cbor_deserialize;
+use heapless::{Vec, VecView};
 use serde::{Deserialize, Serialize};
 
-use crate::{sizes::*, Bytes, TryFromStrError, Vec};
+use crate::{sizes::*, Bytes, TryFromStrError};
 
 pub use crate::operation::{Operation, VendorOperation};
 
@@ -148,7 +149,7 @@ pub enum Response {
 
 impl Response {
     #[inline(never)]
-    pub fn serialize<const N: usize>(&self, buffer: &mut Vec<u8, N>) {
+    pub fn serialize(&self, buffer: &mut VecView<u8>) {
         buffer.resize_default(buffer.capacity()).ok();
         let (status, data) = buffer.split_first_mut().unwrap();
         use cbor_smol::cbor_serialize;

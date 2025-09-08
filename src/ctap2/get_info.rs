@@ -139,7 +139,8 @@ impl Default for Response {
     fn default() -> Self {
         let mut zero_aaguid = Vec::<u8, 16>::new();
         zero_aaguid.resize_default(16).unwrap();
-        let aaguid = Bytes::<16>::from(zero_aaguid);
+        let mut aaguid = Bytes::new();
+        aaguid.resize_zero(16).unwrap();
 
         let mut response = ResponseBuilder {
             aaguid,
@@ -483,7 +484,7 @@ mod tests {
     #[test]
     fn test_serde_get_info_minimal() {
         let versions = Vec::from_slice(&[Version::Fido2_0, Version::Fido2_1]).unwrap();
-        let aaguid = Bytes::from_slice(&[0xff; 16]).unwrap();
+        let aaguid = Bytes::try_from(&[0xff; 16]).unwrap();
         let response = ResponseBuilder { versions, aaguid }.build();
         assert_tokens(
             &response,
@@ -510,7 +511,7 @@ mod tests {
         ];
         let versions =
             Vec::from_slice(&[Version::U2fV2, Version::Fido2_0, Version::Fido2_1]).unwrap();
-        let aaguid = Bytes::from_slice(AAGUID).unwrap();
+        let aaguid = Bytes::try_from(AAGUID).unwrap();
         let mut options = CtapOptions::default();
         options.rk = true;
         options.plat = Some(false);

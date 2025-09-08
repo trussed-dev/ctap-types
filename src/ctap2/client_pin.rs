@@ -188,8 +188,8 @@ mod tests {
     #[test]
     fn test_de_request_set_pin() {
         let key_agreement = EcdhEsHkdf256PublicKey {
-            x: Bytes::from_slice(&KEY_AGREEMENT[..32]).unwrap(),
-            y: Bytes::from_slice(&KEY_AGREEMENT[32..]).unwrap(),
+            x: Bytes::try_from(&KEY_AGREEMENT[..32]).unwrap(),
+            y: Bytes::try_from(&KEY_AGREEMENT[32..]).unwrap(),
         };
         let request = Request {
             pin_protocol: Some(1),
@@ -246,8 +246,8 @@ mod tests {
     #[test]
     fn test_de_request_change_pin() {
         let key_agreement = EcdhEsHkdf256PublicKey {
-            x: Bytes::from_slice(&KEY_AGREEMENT[..32]).unwrap(),
-            y: Bytes::from_slice(&KEY_AGREEMENT[32..]).unwrap(),
+            x: Bytes::try_from(&KEY_AGREEMENT[..32]).unwrap(),
+            y: Bytes::try_from(&KEY_AGREEMENT[32..]).unwrap(),
         };
         let request = Request {
             pin_protocol: Some(1),
@@ -307,8 +307,8 @@ mod tests {
     #[test]
     fn test_de_get_pin_token() {
         let key_agreement = EcdhEsHkdf256PublicKey {
-            x: Bytes::from_slice(&KEY_AGREEMENT[..32]).unwrap(),
-            y: Bytes::from_slice(&KEY_AGREEMENT[32..]).unwrap(),
+            x: Bytes::try_from(&KEY_AGREEMENT[..32]).unwrap(),
+            y: Bytes::try_from(&KEY_AGREEMENT[32..]).unwrap(),
         };
         let request = Request {
             pin_protocol: Some(1),
@@ -362,8 +362,8 @@ mod tests {
     #[test]
     fn test_de_get_pin_token_with_permissions() {
         let key_agreement = EcdhEsHkdf256PublicKey {
-            x: Bytes::from_slice(&KEY_AGREEMENT[..32]).unwrap(),
-            y: Bytes::from_slice(&KEY_AGREEMENT[32..]).unwrap(),
+            x: Bytes::try_from(&KEY_AGREEMENT[..32]).unwrap(),
+            y: Bytes::try_from(&KEY_AGREEMENT[32..]).unwrap(),
         };
         let request = Request {
             pin_protocol: Some(1),
@@ -442,8 +442,8 @@ mod tests {
     #[test]
     fn test_ser_response_get_key_agreement() {
         let key_agreement = EcdhEsHkdf256PublicKey {
-            x: Bytes::from_slice(&KEY_AGREEMENT[..32]).unwrap(),
-            y: Bytes::from_slice(&KEY_AGREEMENT[32..]).unwrap(),
+            x: Bytes::try_from(&KEY_AGREEMENT[..32]).unwrap(),
+            y: Bytes::try_from(&KEY_AGREEMENT[32..]).unwrap(),
         };
         let response = Response {
             key_agreement: Some(key_agreement),
@@ -481,7 +481,7 @@ mod tests {
     #[test]
     fn test_ser_response_get_pin_token() {
         let response = Response {
-            pin_token: Some(Bytes::from_slice(PIN_TOKEN).unwrap()),
+            pin_token: Some(Bytes::try_from(PIN_TOKEN).unwrap()),
             ..Default::default()
         };
         assert_ser_tokens(

@@ -105,7 +105,7 @@ mod tests {
     #[test]
     fn test_ser_response() {
         let response = Response {
-            config: Some(Bytes::from_slice(&[]).unwrap()),
+            config: Some(Bytes::new()),
             ..Default::default()
         };
         assert_ser_tokens(

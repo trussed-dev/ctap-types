@@ -8,7 +8,7 @@ edition = "2021"
 cargo-fuzz = true
 
 [dependencies]
-iso7816 = "0.1.2"
+iso7816 = "0.2.0"
 libfuzzer-sys = "0.4"
 
 [dependencies.ctap-types]

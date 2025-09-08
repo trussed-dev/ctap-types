@@ -144,7 +144,7 @@ impl From<KnownPublicKeyCredentialParameters> for PublicKeyCredentialParameters 
     fn from(value: KnownPublicKeyCredentialParameters) -> Self {
         Self {
             alg: value.alg,
-            key_type: String::from("public-key"),
+            key_type: String::try_from("public-key").unwrap(),
         }
     }
 }
@@ -243,7 +243,7 @@ impl PublicKeyCredentialParameters {
     pub fn public_key_with_alg(alg: i32) -> Self {
         Self {
             alg,
-            key_type: String::from("public-key"),
+            key_type: String::try_from("public-key").unwrap(),
         }
     }
 }

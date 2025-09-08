@@ -302,7 +302,7 @@ fn arbitrary_byte_array<'a, const N: usize>(u: &mut Unstructured<'_>) -> Result<
 
 fn arbitrary_bytes<const N: usize>(u: &mut Unstructured<'_>) -> Result<Bytes<N>> {
     let n = usize::arbitrary(u)?.min(N);
-    Ok(Bytes::from_slice(u.bytes(n)?).unwrap())
+    Ok(Bytes::try_from(u.bytes(n)?).unwrap())
 }
 
 fn arbitrary_vec<'a, T: Arbitrary<'a> + Debug, const N: usize>(
