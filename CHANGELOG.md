@@ -6,9 +6,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/trussed-dev/ctap-types/compare/0.4.0...HEAD
+[Unreleased]: https://github.com/trussed-dev/ctap-types/compare/0.5.0...HEAD
 
 -
+
+## [0.5.0] 2026-03-23
+
+[0.5.0]: https://github.com/trussed-dev/ctap-types/compare/0.4.0...0.5.0
+
+- Update dependencies:
+  - `cosey` v0.4
+  - `heapless` v0.9
+  - `heapless-bytes` v0.5
+  - `iso7816` v0.2
 
 ## [0.4.0] 2025-05-09
 
