@@ -14,7 +14,7 @@ pub struct Response {
 
     // 0x02
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extensions: Option<Vec<Extension, 4>>,
+    pub extensions: Option<Vec<Extension, 8>>,
 
     // 0x03
     pub aaguid: Bytes<16>,
@@ -250,15 +250,19 @@ impl TryFrom<&str> for Version {
 #[serde(into = "&str", try_from = "&str")]
 pub enum Extension {
     CredProtect,
+    CredBlob,
     HmacSecret,
     LargeBlobKey,
+    MinPinLength,
     ThirdPartyPayment,
 }
 
 impl Extension {
     const CRED_PROTECT: &'static str = "credProtect";
+    const CRED_BLOB: &'static str = "credBlob";
     const HMAC_SECRET: &'static str = "hmac-secret";
     const LARGE_BLOB_KEY: &'static str = "largeBlobKey";
+    const MIN_PIN_LENGTH: &'static str = "minPinLength";
     const THIRD_PARTY_PAYMENT: &'static str = "thirdPartyPayment";
 }
 
@@ -266,8 +270,10 @@ impl From<Extension> for &str {
     fn from(extension: Extension) -> Self {
         match extension {
             Extension::CredProtect => Extension::CRED_PROTECT,
+            Extension::CredBlob => Extension::CRED_BLOB,
             Extension::HmacSecret => Extension::HMAC_SECRET,
             Extension::LargeBlobKey => Extension::LARGE_BLOB_KEY,
+            Extension::MinPinLength => Extension::MIN_PIN_LENGTH,
             Extension::ThirdPartyPayment => Extension::THIRD_PARTY_PAYMENT,
         }
     }
@@ -279,8 +285,10 @@ impl TryFrom<&str> for Extension {
     fn try_from(s: &str) -> Result<Self, Self::Error> {
         match s {
             Self::CRED_PROTECT => Ok(Self::CredProtect),
+            Self::CRED_BLOB => Ok(Self::CredBlob),
             Self::HMAC_SECRET => Ok(Self::HmacSecret),
             Self::LARGE_BLOB_KEY => Ok(Self::LargeBlobKey),
+            Self::MIN_PIN_LENGTH => Ok(Self::MinPinLength),
             Self::THIRD_PARTY_PAYMENT => Ok(Self::ThirdPartyPayment),
             _ => Err(TryFromStrError),
         }
@@ -358,11 +366,19 @@ pub struct CtapOptions {
     #[cfg(feature = "get-info-full")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub uv_bio_enroll: Option<bool>,
+    // CTAP2 canonical CBOR map encoding (RFC 8949 §4.2.3 + CTAP §6) requires
+    // string keys sorted by **length, then byte-lexicographic** order. The
+    // serde struct field order here is the on-the-wire key order, so the
+    // 14-byte `pinUvAuthToken` must come before the 15-byte
+    // `setMinPINLength`. Strict parsers (libfido2 since v1.10) reject
+    // out-of-order maps with "iterator < 0", which surfaces in
+    // `fido2-token` as `caps: 0x01 (..., nocbor, ...)` after
+    // `fido_dev_open_rx` falls back to U2F.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pin_uv_auth_token: Option<bool>,
     #[cfg(feature = "get-info-full")]
     #[serde(rename = "setMinPINLength", skip_serializing_if = "Option::is_none")]
     pub set_min_pin_length: Option<bool>, // default false
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub pin_uv_auth_token: Option<bool>,
     #[cfg(feature = "get-info-full")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub make_cred_uv_not_rqd: Option<bool>,
@@ -465,8 +481,11 @@ mod tests {
     fn test_serde_extension() {
         let extensions = [
             (Extension::CredProtect, "credProtect"),
+            (Extension::CredBlob, "credBlob"),
             (Extension::HmacSecret, "hmac-secret"),
             (Extension::LargeBlobKey, "largeBlobKey"),
+            (Extension::MinPinLength, "minPinLength"),
+            (Extension::ThirdPartyPayment, "thirdPartyPayment"),
         ];
         for (extension, s) in extensions {
             assert_tokens(&extension, &[Token::BorrowedStr(s)]);
