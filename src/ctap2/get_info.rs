@@ -210,6 +210,7 @@ pub enum Version {
     Fido2_0,
     Fido2_1,
     Fido2_1Pre,
+    Fido2_2,
     U2fV2,
 }
 
@@ -217,6 +218,7 @@ impl Version {
     const FIDO_2_0: &'static str = "FIDO_2_0";
     const FIDO_2_1: &'static str = "FIDO_2_1";
     const FIDO_2_1_PRE: &'static str = "FIDO_2_1_PRE";
+    const FIDO_2_2: &'static str = "FIDO_2_2";
     const U2F_V2: &'static str = "U2F_V2";
 }
 
@@ -226,6 +228,7 @@ impl From<Version> for &str {
             Version::Fido2_0 => Version::FIDO_2_0,
             Version::Fido2_1 => Version::FIDO_2_1,
             Version::Fido2_1Pre => Version::FIDO_2_1_PRE,
+            Version::Fido2_2 => Version::FIDO_2_2,
             Version::U2fV2 => Version::U2F_V2,
         }
     }
@@ -239,6 +242,7 @@ impl TryFrom<&str> for Version {
             Self::FIDO_2_0 => Ok(Self::Fido2_0),
             Self::FIDO_2_1 => Ok(Self::Fido2_1),
             Self::FIDO_2_1_PRE => Ok(Self::Fido2_1Pre),
+            Self::FIDO_2_2 => Ok(Self::Fido2_2),
             Self::U2F_V2 => Ok(Self::U2fV2),
             _ => Err(TryFromStrError),
         }
@@ -252,6 +256,7 @@ pub enum Extension {
     CredProtect,
     CredBlob,
     HmacSecret,
+    HmacSecretMc,
     LargeBlobKey,
     MinPinLength,
     ThirdPartyPayment,
@@ -261,6 +266,7 @@ impl Extension {
     const CRED_PROTECT: &'static str = "credProtect";
     const CRED_BLOB: &'static str = "credBlob";
     const HMAC_SECRET: &'static str = "hmac-secret";
+    const HMAC_SECRET_MC: &'static str = "hmac-secret-mc";
     const LARGE_BLOB_KEY: &'static str = "largeBlobKey";
     const MIN_PIN_LENGTH: &'static str = "minPinLength";
     const THIRD_PARTY_PAYMENT: &'static str = "thirdPartyPayment";
@@ -272,6 +278,7 @@ impl From<Extension> for &str {
             Extension::CredProtect => Extension::CRED_PROTECT,
             Extension::CredBlob => Extension::CRED_BLOB,
             Extension::HmacSecret => Extension::HMAC_SECRET,
+            Extension::HmacSecretMc => Extension::HMAC_SECRET_MC,
             Extension::LargeBlobKey => Extension::LARGE_BLOB_KEY,
             Extension::MinPinLength => Extension::MIN_PIN_LENGTH,
             Extension::ThirdPartyPayment => Extension::THIRD_PARTY_PAYMENT,
@@ -287,6 +294,7 @@ impl TryFrom<&str> for Extension {
             Self::CRED_PROTECT => Ok(Self::CredProtect),
             Self::CRED_BLOB => Ok(Self::CredBlob),
             Self::HMAC_SECRET => Ok(Self::HmacSecret),
+            Self::HMAC_SECRET_MC => Ok(Self::HmacSecretMc),
             Self::LARGE_BLOB_KEY => Ok(Self::LargeBlobKey),
             Self::MIN_PIN_LENGTH => Ok(Self::MinPinLength),
             Self::THIRD_PARTY_PAYMENT => Ok(Self::ThirdPartyPayment),
@@ -470,6 +478,7 @@ mod tests {
             (Version::Fido2_0, "FIDO_2_0"),
             (Version::Fido2_1, "FIDO_2_1"),
             (Version::Fido2_1Pre, "FIDO_2_1_PRE"),
+            (Version::Fido2_2, "FIDO_2_2"),
             (Version::U2fV2, "U2F_V2"),
         ];
         for (version, s) in versions {
@@ -483,6 +492,7 @@ mod tests {
             (Extension::CredProtect, "credProtect"),
             (Extension::CredBlob, "credBlob"),
             (Extension::HmacSecret, "hmac-secret"),
+            (Extension::HmacSecretMc, "hmac-secret-mc"),
             (Extension::LargeBlobKey, "largeBlobKey"),
             (Extension::MinPinLength, "minPinLength"),
             (Extension::ThirdPartyPayment, "thirdPartyPayment"),

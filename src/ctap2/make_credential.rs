@@ -59,6 +59,13 @@ pub struct Extensions<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(borrow)]
     pub cred_blob: Option<&'a serde_bytes::Bytes>,
+
+    /// `hmac-secret-mc` (CTAP 2.2 §11.4.5 / WebAuthn L3): platform-supplied
+    /// hmac-secret request evaluated at MakeCredential time, returning
+    /// hmac-secret outputs alongside the freshly-minted credential.
+    #[serde(rename = "hmac-secret-mc")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub hmac_secret_mc: Option<super::get_assertion::HmacSecretInput>,
 }
 
 /// Extensions output emitted in `authenticatorData.extensions` after
@@ -83,6 +90,13 @@ pub struct ExtensionsOutput {
     #[serde(rename = "credBlob")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub cred_blob: Option<bool>,
+
+    /// `hmac-secret-mc` (CTAP 2.2): encrypted hmac-secret outputs produced at
+    /// MakeCredential time. Wire format mirrors GetAssertion's `hmac-secret`
+    /// output — `enc(output1)` or `enc(output1 || output2)`, up to 80 bytes.
+    #[serde(rename = "hmac-secret-mc")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub hmac_secret_mc: Option<crate::Bytes<80>>,
 
     #[cfg(feature = "third-party-payment")]
     #[serde(rename = "thirdPartyPayment")]
