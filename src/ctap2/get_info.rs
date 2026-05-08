@@ -14,7 +14,7 @@ pub struct Response {
 
     // 0x02
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extensions: Option<Vec<Extension, 4>>,
+    pub extensions: Option<Vec<Extension, 6>>,
 
     // 0x03
     pub aaguid: Bytes<16>,
@@ -66,7 +66,7 @@ pub struct Response {
     // FIDO_2_1
     #[cfg(feature = "get-info-full")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub min_pin_length: Option<usize>,
+    pub min_pin_length: Option<u8>,
 
     // 0x0E
     // FIDO_2_1
@@ -250,15 +250,19 @@ impl TryFrom<&str> for Version {
 #[serde(into = "&str", try_from = "&str")]
 pub enum Extension {
     CredProtect,
+    CredBlob,
     HmacSecret,
     LargeBlobKey,
+    MinPinLength,
     ThirdPartyPayment,
 }
 
 impl Extension {
     const CRED_PROTECT: &'static str = "credProtect";
+    const CRED_BLOB: &'static str = "credBlob";
     const HMAC_SECRET: &'static str = "hmac-secret";
     const LARGE_BLOB_KEY: &'static str = "largeBlobKey";
+    const MIN_PIN_LENGTH: &'static str = "minPinLength";
     const THIRD_PARTY_PAYMENT: &'static str = "thirdPartyPayment";
 }
 
@@ -266,8 +270,10 @@ impl From<Extension> for &str {
     fn from(extension: Extension) -> Self {
         match extension {
             Extension::CredProtect => Extension::CRED_PROTECT,
+            Extension::CredBlob => Extension::CRED_BLOB,
             Extension::HmacSecret => Extension::HMAC_SECRET,
             Extension::LargeBlobKey => Extension::LARGE_BLOB_KEY,
+            Extension::MinPinLength => Extension::MIN_PIN_LENGTH,
             Extension::ThirdPartyPayment => Extension::THIRD_PARTY_PAYMENT,
         }
     }
@@ -279,8 +285,10 @@ impl TryFrom<&str> for Extension {
     fn try_from(s: &str) -> Result<Self, Self::Error> {
         match s {
             Self::CRED_PROTECT => Ok(Self::CredProtect),
+            Self::CRED_BLOB => Ok(Self::CredBlob),
             Self::HMAC_SECRET => Ok(Self::HmacSecret),
             Self::LARGE_BLOB_KEY => Ok(Self::LargeBlobKey),
+            Self::MIN_PIN_LENGTH => Ok(Self::MinPinLength),
             Self::THIRD_PARTY_PAYMENT => Ok(Self::ThirdPartyPayment),
             _ => Err(TryFromStrError),
         }
@@ -465,8 +473,11 @@ mod tests {
     fn test_serde_extension() {
         let extensions = [
             (Extension::CredProtect, "credProtect"),
+            (Extension::CredBlob, "credBlob"),
             (Extension::HmacSecret, "hmac-secret"),
             (Extension::LargeBlobKey, "largeBlobKey"),
+            (Extension::MinPinLength, "minPinLength"),
+            (Extension::ThirdPartyPayment, "thirdPartyPayment"),
         ];
         for (extension, s) in extensions {
             assert_tokens(&extension, &[Token::BorrowedStr(s)]);

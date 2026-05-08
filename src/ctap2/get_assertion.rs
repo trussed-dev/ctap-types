@@ -24,6 +24,12 @@ pub struct HmacSecretInput {
 #[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
 #[non_exhaustive]
 pub struct ExtensionsInput {
+    /// `credBlob` (CTAP 2.1 §11.1) retrieval flag. `Some(true)` asks the
+    /// authenticator to return the blob stored at MakeCredential time.
+    #[serde(rename = "credBlob")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cred_blob: Option<bool>,
+
     #[serde(rename = "hmac-secret")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub hmac_secret: Option<HmacSecretInput>,
@@ -42,6 +48,13 @@ pub struct ExtensionsInput {
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 #[non_exhaustive]
 pub struct ExtensionsOutput {
+    /// `credBlob` retrieval result: the bytes stored at MakeCredential time, up
+    /// to `maxCredBlobLength` (≥ 32). Absent if the platform did not request
+    /// `credBlob` or if no blob is associated with the credential.
+    #[serde(rename = "credBlob")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cred_blob: Option<Bytes<MAX_CRED_BLOB_LENGTH>>,
+
     #[serde(rename = "hmac-secret")]
     #[serde(skip_serializing_if = "Option::is_none")]
     // *either* enc(output1) *or* enc(output1 || output2)
@@ -57,11 +70,15 @@ impl ExtensionsOutput {
     #[inline]
     pub fn is_set(&self) -> bool {
         let Self {
+            cred_blob,
             hmac_secret,
             #[cfg(feature = "third-party-payment")]
             third_party_payment,
         } = self;
         if hmac_secret.is_some() {
+            return true;
+        }
+        if cred_blob.is_some() {
             return true;
         }
         #[cfg(feature = "third-party-payment")]
@@ -181,6 +198,7 @@ mod tests {
                 pin_protocol: Some(1),
             }),
             large_blob_key: Some(true),
+            cred_blob: Some(true),
             #[cfg(feature = "third-party-payment")]
             third_party_payment: Some(true),
         };
@@ -191,6 +209,7 @@ mod tests {
     fn test_extensions_output_canonical() {
         let output = ExtensionsOutput {
             hmac_secret: Some([0xff; 80].try_into().unwrap()),
+            cred_blob: Some([0xff; 32].try_into().unwrap()),
             #[cfg(feature = "third-party-payment")]
             third_party_payment: Some(true),
         };

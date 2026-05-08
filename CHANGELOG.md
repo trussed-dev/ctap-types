@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [Unreleased]: https://github.com/trussed-dev/ctap-types/compare/0.5.0...HEAD
 
 - `ctap2::get_info`: Fix field order of the `CtapOptions` and `Certifications` structs to produce canonical CBOR
+- Add support for missing CTAP 2.1 features:
+  - Add `AuthenticatorConfig` command.
+  - Add `credBlob` extension and split `make_credential::Extensions` into `ExtensionsInput` and `ExtensionsOutput`.
+  - Add `minPinLength` extension.
 
 ## [0.5.0] 2026-03-23
 

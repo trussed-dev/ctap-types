@@ -24,10 +24,20 @@ impl TryFrom<u8> for CredentialProtectionPolicy {
     }
 }
 
+/// Extensions input to `authenticatorMakeCredential`.
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
-#[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
 #[non_exhaustive]
-pub struct Extensions {
+// `Arbitrary` impl lives in `crate::arbitrary` because `&'a serde_bytes::Bytes`
+// (cred_blob) doesn't satisfy `Arbitrary<'_>` and the derive macro can't
+// special-case it. Same pattern as `make_credential::Request<'a>`.
+pub struct ExtensionsInput<'a> {
+    /// `credBlob` (CTAP 2.1 §11.1): platform-supplied bytes to associate with
+    /// the credential. Up to `maxCredBlobLength` (≥ 32) bytes per credential.
+    #[serde(rename = "credBlob")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(borrow)]
+    pub cred_blob: Option<&'a serde_bytes::Bytes>,
+
     #[serde(rename = "credProtect")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub cred_protect: Option<u8>,
@@ -47,6 +57,32 @@ pub struct Extensions {
     pub third_party_payment: Option<bool>,
 }
 
+/// Extensions output emitted in `authenticatorData.extensions` after
+/// `authenticatorMakeCredential`.
+#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
+#[non_exhaustive]
+pub struct ExtensionsOutput {
+    /// `credBlob` storage acknowledgement: `Some(true)` if the platform-supplied
+    /// blob was stored, `Some(false)` if not stored, absent if the platform did
+    /// not request the extension.
+    #[serde(rename = "credBlob")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cred_blob: Option<bool>,
+
+    #[serde(rename = "credProtect")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cred_protect: Option<u8>,
+
+    #[serde(rename = "hmac-secret")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub hmac_secret: Option<bool>,
+
+    #[cfg(feature = "third-party-payment")]
+    #[serde(rename = "thirdPartyPayment")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub third_party_payment: Option<bool>,
+}
+
 #[derive(Clone, Debug, Eq, PartialEq, DeserializeIndexed)]
 #[non_exhaustive]
 #[serde_indexed(offset = 1)]
@@ -58,7 +94,7 @@ pub struct Request<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub exclude_list: Option<Vec<PublicKeyCredentialDescriptorRef<'a>, 16>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extensions: Option<Extensions>,
+    pub extensions: Option<ExtensionsInput<'a>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub options: Option<AuthenticatorOptions>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -74,7 +110,7 @@ pub struct Request<'a> {
 pub type AttestationObject = Response;
 
 pub type AuthenticatorData<'a> =
-    super::AuthenticatorData<'a, AttestedCredentialData<'a>, Extensions>;
+    super::AuthenticatorData<'a, AttestedCredentialData<'a>, ExtensionsOutput>;
 
 // NOTE: This is not CBOR, it has a custom encoding...
 // https://www.w3.org/TR/webauthn/#sec-attested-credential-data
@@ -179,13 +215,26 @@ mod tests {
     }
 
     #[test]
-    fn test_extensions_canonical() {
-        let extensions = Extensions {
+    fn test_extensions_input_canonical() {
+        let extensions = ExtensionsInput {
             cred_protect: Some(1),
             hmac_secret: Some(true),
             large_blob_key: Some(true),
             #[cfg(feature = "third-party-payment")]
             third_party_payment: Some(true),
+            cred_blob: Some(serde_bytes::Bytes::new(b"1234")),
+        };
+        crate::test::assert_canonical_cbor(&extensions);
+    }
+
+    #[test]
+    fn test_extensions_output_canonical() {
+        let extensions = ExtensionsOutput {
+            cred_protect: Some(1),
+            hmac_secret: Some(true),
+            #[cfg(feature = "third-party-payment")]
+            third_party_payment: Some(true),
+            cred_blob: Some(true),
         };
         crate::test::assert_canonical_cbor(&extensions);
     }

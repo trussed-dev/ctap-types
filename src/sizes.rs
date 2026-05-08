@@ -30,3 +30,5 @@ pub const THEORETICAL_MAX_MESSAGE_SIZE: usize = PACKET_SIZE - 7 + 128 * (PACKET_
 pub const LARGE_BLOB_MAX_FRAGMENT_LENGTH: usize = 0;
 #[cfg(feature = "large-blobs")]
 pub const LARGE_BLOB_MAX_FRAGMENT_LENGTH: usize = 3008;
+
+pub const MAX_CRED_BLOB_LENGTH: usize = 32;
