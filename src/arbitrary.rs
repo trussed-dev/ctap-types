@@ -308,6 +308,7 @@ impl<'a> Arbitrary<'a> for ctap2::make_credential::ExtensionsInput<'a> {
         } else {
             None
         };
+        let hmac_secret_mc = u.arbitrary()?;
         Ok(Self {
             cred_protect,
             hmac_secret,
@@ -315,6 +316,7 @@ impl<'a> Arbitrary<'a> for ctap2::make_credential::ExtensionsInput<'a> {
             #[cfg(feature = "third-party-payment")]
             third_party_payment,
             cred_blob,
+            hmac_secret_mc,
         })
     }
 }

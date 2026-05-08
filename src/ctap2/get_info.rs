@@ -14,7 +14,7 @@ pub struct Response {
 
     // 0x02
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extensions: Option<Vec<Extension, 6>>,
+    pub extensions: Option<Vec<Extension, 7>>,
 
     // 0x03
     pub aaguid: Bytes<16>,
@@ -252,6 +252,7 @@ pub enum Extension {
     CredProtect,
     CredBlob,
     HmacSecret,
+    HmacSecretMc,
     LargeBlobKey,
     MinPinLength,
     ThirdPartyPayment,
@@ -261,6 +262,7 @@ impl Extension {
     const CRED_PROTECT: &'static str = "credProtect";
     const CRED_BLOB: &'static str = "credBlob";
     const HMAC_SECRET: &'static str = "hmac-secret";
+    const HMAC_SECRET_MC: &'static str = "hmac-secret-mc";
     const LARGE_BLOB_KEY: &'static str = "largeBlobKey";
     const MIN_PIN_LENGTH: &'static str = "minPinLength";
     const THIRD_PARTY_PAYMENT: &'static str = "thirdPartyPayment";
@@ -272,6 +274,7 @@ impl From<Extension> for &str {
             Extension::CredProtect => Extension::CRED_PROTECT,
             Extension::CredBlob => Extension::CRED_BLOB,
             Extension::HmacSecret => Extension::HMAC_SECRET,
+            Extension::HmacSecretMc => Extension::HMAC_SECRET_MC,
             Extension::LargeBlobKey => Extension::LARGE_BLOB_KEY,
             Extension::MinPinLength => Extension::MIN_PIN_LENGTH,
             Extension::ThirdPartyPayment => Extension::THIRD_PARTY_PAYMENT,
@@ -287,6 +290,7 @@ impl TryFrom<&str> for Extension {
             Self::CRED_PROTECT => Ok(Self::CredProtect),
             Self::CRED_BLOB => Ok(Self::CredBlob),
             Self::HMAC_SECRET => Ok(Self::HmacSecret),
+            Self::HMAC_SECRET_MC => Ok(Self::HmacSecretMc),
             Self::LARGE_BLOB_KEY => Ok(Self::LargeBlobKey),
             Self::MIN_PIN_LENGTH => Ok(Self::MinPinLength),
             Self::THIRD_PARTY_PAYMENT => Ok(Self::ThirdPartyPayment),
@@ -475,6 +479,7 @@ mod tests {
             (Extension::CredProtect, "credProtect"),
             (Extension::CredBlob, "credBlob"),
             (Extension::HmacSecret, "hmac-secret"),
+            (Extension::HmacSecretMc, "hmac-secret-mc"),
             (Extension::LargeBlobKey, "largeBlobKey"),
             (Extension::MinPinLength, "minPinLength"),
             (Extension::ThirdPartyPayment, "thirdPartyPayment"),

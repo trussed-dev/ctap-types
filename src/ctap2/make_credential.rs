@@ -51,6 +51,13 @@ pub struct ExtensionsInput<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub large_blob_key: Option<bool>,
 
+    /// `hmac-secret-mc` (CTAP 2.2 §11.4.5 / WebAuthn L3): platform-supplied
+    /// hmac-secret request evaluated at MakeCredential time, returning
+    /// hmac-secret outputs alongside the freshly-minted credential.
+    #[serde(rename = "hmac-secret-mc")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub hmac_secret_mc: Option<super::get_assertion::HmacSecretInput>,
+
     #[cfg(feature = "third-party-payment")]
     #[serde(rename = "thirdPartyPayment")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -76,6 +83,13 @@ pub struct ExtensionsOutput {
     #[serde(rename = "hmac-secret")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub hmac_secret: Option<bool>,
+
+    /// `hmac-secret-mc` (CTAP 2.2): encrypted hmac-secret outputs produced at
+    /// MakeCredential time. Wire format mirrors GetAssertion's `hmac-secret`
+    /// output — `enc(output1)` or `enc(output1 || output2)`, up to 80 bytes.
+    #[serde(rename = "hmac-secret-mc")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub hmac_secret_mc: Option<crate::Bytes<80>>,
 
     #[cfg(feature = "third-party-payment")]
     #[serde(rename = "thirdPartyPayment")]
@@ -190,6 +204,8 @@ pub struct UnsignedExtensionOutputs {}
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ctap2::get_assertion::HmacSecretInput;
+    use cosey::EcdhEsHkdf256PublicKey;
     use serde_test::{assert_ser_tokens, Token};
 
     #[test]
@@ -223,6 +239,15 @@ mod tests {
             #[cfg(feature = "third-party-payment")]
             third_party_payment: Some(true),
             cred_blob: Some(serde_bytes::Bytes::new(b"1234")),
+            hmac_secret_mc: Some(HmacSecretInput {
+                key_agreement: EcdhEsHkdf256PublicKey {
+                    x: [0xff; 32].try_into().unwrap(),
+                    y: [0xff; 32].try_into().unwrap(),
+                },
+                salt_enc: [0xff; 80].try_into().unwrap(),
+                salt_auth: [0xff; 32].try_into().unwrap(),
+                pin_protocol: Some(1),
+            }),
         };
         crate::test::assert_canonical_cbor(&extensions);
     }
@@ -235,6 +260,7 @@ mod tests {
             #[cfg(feature = "third-party-payment")]
             third_party_payment: Some(true),
             cred_blob: Some(true),
+            hmac_secret_mc: Some([0xff; 80].try_into().unwrap()),
         };
         crate::test::assert_canonical_cbor(&extensions);
     }

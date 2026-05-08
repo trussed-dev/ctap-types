@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Add `AuthenticatorConfig` command.
   - Add `credBlob` extension and split `make_credential::Extensions` into `ExtensionsInput` and `ExtensionsOutput`.
   - Add `minPinLength` extension.
+- Add support for missing CTAP 2.2 features:
+  - Add `hmac-secret-mc` extension.
 
 ## [0.5.0] 2026-03-23
 
