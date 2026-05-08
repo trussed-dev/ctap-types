@@ -308,9 +308,9 @@ pub struct NoneAttestationStatement {}
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
 pub struct PackedAttestationStatement {
     pub alg: i32,
-    pub sig: Bytes<ASN1_SIGNATURE_LENGTH>,
+    pub sig: Bytes<MAX_PACKED_SIG_LENGTH>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub x5c: Option<Vec<Bytes<1024>, 1>>,
+    pub x5c: Option<Vec<Bytes<MAX_X5C_CERT_LENGTH>, 1>>,
 }
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]

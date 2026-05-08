@@ -17,6 +17,7 @@ pub enum Subcommand {
     EnableEnterpriseAttestation = 0x01,
     ToggleAlwaysUv = 0x02,
     SetMinPINLength = 0x03,
+    EnableLongTouchForReset = 0x04,
     VendorPrototype = 0xff,
 }
 
@@ -63,6 +64,7 @@ mod tests {
             (Subcommand::EnableEnterpriseAttestation, 0x01),
             (Subcommand::ToggleAlwaysUv, 0x02),
             (Subcommand::SetMinPINLength, 0x03),
+            (Subcommand::EnableLongTouchForReset, 0x04),
             (Subcommand::VendorPrototype, 0xff),
         ] {
             assert_tokens(&sub, &[Token::U8(byte)]);
