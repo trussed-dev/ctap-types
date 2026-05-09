@@ -290,8 +290,8 @@ impl<'de> Deserialize<'de> for AttestationStatement {
                 A: serde::de::MapAccess<'de>,
             {
                 let mut alg: Option<i32> = None;
-                let mut sig: Option<Bytes<ASN1_SIGNATURE_LENGTH>> = None;
-                let mut x5c: Option<Vec<Bytes<1024>, 1>> = None;
+                let mut sig: Option<Bytes<MAX_PACKED_SIG_LENGTH>> = None;
+                let mut x5c: Option<Vec<Bytes<MAX_X5C_CERT_LENGTH>, 1>> = None;
                 while let Some(key) = map.next_key::<&str>()? {
                     match key {
                         "alg" => alg = Some(map.next_value()?),
@@ -361,9 +361,9 @@ pub struct NoneAttestationStatement {}
 #[cfg_attr(feature = "test-client", derive(Deserialize))]
 pub struct PackedAttestationStatement {
     pub alg: i32,
-    pub sig: Bytes<ASN1_SIGNATURE_LENGTH>,
+    pub sig: Bytes<MAX_PACKED_SIG_LENGTH>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub x5c: Option<Vec<Bytes<1024>, 1>>,
+    pub x5c: Option<Vec<Bytes<MAX_X5C_CERT_LENGTH>, 1>>,
 }
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
