@@ -98,6 +98,7 @@ pub struct ExtensionsOutput {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, DeserializeIndexed)]
+#[cfg_attr(feature = "platform-serde", derive(SerializeIndexed))]
 #[non_exhaustive]
 #[serde_indexed(offset = 1)]
 pub struct Request<'a> {
@@ -162,6 +163,7 @@ impl super::SerializeAttestedCredentialData for AttestedCredentialData<'_> {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed)]
+#[cfg_attr(feature = "platform-serde", derive(DeserializeIndexed))]
 #[non_exhaustive]
 #[serde_indexed(offset = 1)]
 pub struct Response {
@@ -198,6 +200,7 @@ impl ResponseBuilder {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+#[cfg_attr(feature = "platform-serde", derive(Deserialize))]
 #[non_exhaustive]
 pub struct UnsignedExtensionOutputs {}
 

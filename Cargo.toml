@@ -31,6 +31,9 @@ serde_test = "1.0.176"
 [features]
 std = []
 
+# adds additional serde::{Deserialize, Serialize} implementations required by platforms
+platform-serde = []
+
 # implements arbitrary::Arbitrary for requests
 arbitrary = ["dep:arbitrary", "std"]
 # enables all fields for ctap2::get_info

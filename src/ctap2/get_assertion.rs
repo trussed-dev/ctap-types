@@ -103,6 +103,7 @@ pub type AuthenticatorData<'a> =
 pub type AllowList<'a> = Vec<PublicKeyCredentialDescriptorRef<'a>, MAX_CREDENTIAL_COUNT_IN_LIST>;
 
 #[derive(Clone, Debug, Eq, PartialEq, DeserializeIndexed)]
+#[cfg_attr(feature = "platform-serde", derive(SerializeIndexed))]
 #[non_exhaustive]
 #[serde_indexed(offset = 1)]
 pub struct Request<'a> {
@@ -128,6 +129,7 @@ pub struct Request<'a> {
 // https://fidoalliance.org/specs/fido-v2.0-ps-20190130/fido-client-to-authenticator-protocol-v2.0-ps-20190130.html#authenticatorMakeCredential
 // does not coincide with what python-fido2 expects in AttestationObject.__init__ *at all* :'-)
 #[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed)]
+#[cfg_attr(feature = "platform-serde", derive(DeserializeIndexed))]
 #[non_exhaustive]
 #[serde_indexed(offset = 1)]
 pub struct Response {

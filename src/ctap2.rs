@@ -267,6 +267,61 @@ pub enum AttestationStatement {
     Packed(PackedAttestationStatement),
 }
 
+// Hand-rolled Deserialize avoids serde's `#[serde(untagged)]` machinery,
+// which pulls in `serde::private::de::Content` (alloc-dependent) and
+// would force `serde/alloc` on the whole ctap-types crate. Distinguishes
+// variants by structural shape: `None` is an empty CBOR map; `Packed`
+// has `alg` + `sig` (+ optional `x5c`).
+#[cfg(feature = "platform-serde")]
+impl<'de> Deserialize<'de> for AttestationStatement {
+    fn deserialize<D>(deserializer: D) -> core::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        struct V;
+        impl<'de> serde::de::Visitor<'de> for V {
+            type Value = AttestationStatement;
+            fn expecting(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+                f.write_str("a CBOR map for an attestation statement")
+            }
+            fn visit_map<A>(self, mut map: A) -> core::result::Result<Self::Value, A::Error>
+            where
+                A: serde::de::MapAccess<'de>,
+            {
+                use serde::de::Error as _;
+
+                let mut alg: Option<i32> = None;
+                let mut sig: Option<Bytes<ASN1_SIGNATURE_LENGTH>> = None;
+                let mut x5c: Option<Vec<Bytes<1024>, 1>> = None;
+                let mut has_values = false;
+                while let Some(key) = map.next_key::<&str>()? {
+                    has_values = true;
+                    match key {
+                        "alg" => alg = Some(map.next_value()?),
+                        "sig" => sig = Some(map.next_value()?),
+                        "x5c" => x5c = Some(map.next_value()?),
+                        _ => {
+                            let _: serde::de::IgnoredAny = map.next_value()?;
+                        }
+                    }
+                }
+                if let Some((alg, sig)) = alg.zip(sig) {
+                    Ok(AttestationStatement::Packed(PackedAttestationStatement {
+                        alg,
+                        sig,
+                        x5c,
+                    }))
+                } else if !has_values {
+                    Ok(AttestationStatement::None(NoneAttestationStatement {}))
+                } else {
+                    Err(A::Error::custom("unsupported attestation statement format"))
+                }
+            }
+        }
+        deserializer.deserialize_map(V)
+    }
+}
+
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
 #[non_exhaustive]
@@ -303,9 +358,11 @@ impl TryFrom<&str> for AttestationStatementFormat {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+#[cfg_attr(feature = "platform-serde", derive(Deserialize))]
 pub struct NoneAttestationStatement {}
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+#[cfg_attr(feature = "platform-serde", derive(Deserialize))]
 pub struct PackedAttestationStatement {
     pub alg: i32,
     pub sig: Bytes<ASN1_SIGNATURE_LENGTH>,
@@ -326,6 +383,27 @@ impl AttestationFormatsPreference {
 
     pub fn includes_unknown_formats(&self) -> bool {
         self.unknown
+    }
+}
+
+#[cfg(feature = "platform-serde")]
+impl Serialize for AttestationFormatsPreference {
+    fn serialize<S>(&self, serializer: S) -> core::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeSeq;
+        // Wire format mirrors the Deserialize impl below: a CBOR array of
+        // attestation-format strings. The `unknown` flag is a parse-time
+        // marker — Deserialize sets it when it sees a string it doesn't
+        // recognize. That source string isn't retained, so we can't round-
+        // trip it; on the way out we only emit the recognized entries.
+        let mut seq = serializer.serialize_seq(Some(self.known_formats.len()))?;
+        for format in &self.known_formats {
+            let s: &str = (*format).into();
+            seq.serialize_element(s)?;
+        }
+        seq.end()
     }
 }
 
