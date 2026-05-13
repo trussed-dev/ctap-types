@@ -288,4 +288,52 @@ mod tests {
         assert_eq!(truncate::<5>(s), s);
         assert_eq!(truncate::<64>(s), s);
     }
+
+    #[test]
+    fn test_rp_entity_canonical() {
+        let rp_entity = PublicKeyCredentialRpEntity {
+            id: String::try_from("test").unwrap(),
+            name: Some(String::try_from("test").unwrap()),
+            icon: Some(Icon),
+        };
+        crate::test::assert_canonical_cbor(&rp_entity);
+    }
+
+    #[test]
+    fn test_user_entity_canonical() {
+        let user_entity = PublicKeyCredentialUserEntity {
+            id: Bytes::try_from(b"test").unwrap(),
+            icon: Some(String::try_from("test").unwrap()),
+            name: Some(String::try_from("test").unwrap()),
+            display_name: Some(String::try_from("test").unwrap()),
+        };
+        crate::test::assert_canonical_cbor(&user_entity);
+    }
+
+    #[test]
+    fn test_cred_parameters_canonical() {
+        let cred_parameters = PublicKeyCredentialParameters {
+            alg: -1,
+            key_type: String::try_from("public-key").unwrap(),
+        };
+        crate::test::assert_canonical_cbor(&cred_parameters);
+    }
+
+    #[test]
+    fn test_cred_descriptor_canonical() {
+        let cred_descriptor = PublicKeyCredentialDescriptor {
+            id: Bytes::try_from(b"test").unwrap(),
+            key_type: String::try_from("test").unwrap(),
+        };
+        crate::test::assert_canonical_cbor(&cred_descriptor);
+    }
+
+    #[test]
+    fn test_cred_descriptor_ref_canonical() {
+        let cred_descriptor_ref = PublicKeyCredentialDescriptorRef {
+            id: serde_bytes::Bytes::new(b"test"),
+            key_type: "test",
+        };
+        crate::test::assert_canonical_cbor(&cred_descriptor_ref);
+    }
 }

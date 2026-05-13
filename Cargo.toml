@@ -22,6 +22,9 @@ serde_bytes = { version = "0.11.14", default-features = false }
 serde_repr = "0.1"
 
 [dev-dependencies]
+cbor-smol = "0.5"
+ciborium = "0.2"
+hex = "0.4"
 hex-literal = "0.4.1"
 serde_test = "1.0.176"
 

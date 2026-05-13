@@ -33,6 +33,8 @@ pub mod ctap2;
 pub(crate) mod operation;
 pub use cbor_smol as serde;
 pub mod sizes;
+#[cfg(test)]
+mod test;
 pub mod webauthn;
 
 pub use ctap2::{Error, Result};
@@ -49,9 +51,6 @@ impl Display for TryFromStrError {
         "invalid enum value".fmt(f)
     }
 }
-
-#[cfg(test)]
-mod tests {}
 
 /// Call a remote procedure with a request, receive a response, maybe.
 pub trait Rpc<Error, Request, Response> {

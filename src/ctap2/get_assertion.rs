@@ -163,3 +163,43 @@ impl ResponseBuilder {
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 #[non_exhaustive]
 pub struct UnsignedExtensionOutputs {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_extensions_input_canonical() {
+        let input = ExtensionsInput {
+            hmac_secret: Some(HmacSecretInput {
+                key_agreement: EcdhEsHkdf256PublicKey {
+                    x: [0xff; 32].try_into().unwrap(),
+                    y: [0xff; 32].try_into().unwrap(),
+                },
+                salt_enc: [0xff; 80].try_into().unwrap(),
+                salt_auth: [0xff; 32].try_into().unwrap(),
+                pin_protocol: Some(1),
+            }),
+            large_blob_key: Some(true),
+            #[cfg(feature = "third-party-payment")]
+            third_party_payment: Some(true),
+        };
+        crate::test::assert_canonical_cbor(&input);
+    }
+
+    #[test]
+    fn test_extensions_output_canonical() {
+        let output = ExtensionsOutput {
+            hmac_secret: Some([0xff; 80].try_into().unwrap()),
+            #[cfg(feature = "third-party-payment")]
+            third_party_payment: Some(true),
+        };
+        crate::test::assert_canonical_cbor(&output);
+    }
+
+    #[test]
+    fn test_unsigned_extension_outputs_canonical() {
+        let outputs = UnsignedExtensionOutputs {};
+        crate::test::assert_canonical_cbor(&outputs);
+    }
+}

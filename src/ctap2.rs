@@ -552,3 +552,18 @@ impl<A: Authenticator> crate::Rpc<Error, Request<'_>, Response> for A {
         self.call_ctap2(request)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_authenticator_options_canonical() {
+        let options = AuthenticatorOptions {
+            uv: Some(true),
+            up: Some(true),
+            rk: Some(true),
+        };
+        crate::test::assert_canonical_cbor(&options);
+    }
+}

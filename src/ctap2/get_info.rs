@@ -606,4 +606,55 @@ mod tests {
             ],
         );
     }
+
+    #[test]
+    fn test_ctap_options_canonical() {
+        let options = CtapOptions {
+            #[cfg(feature = "get-info-full")]
+            ep: Some(true),
+            rk: false,
+            up: true,
+            uv: Some(true),
+            plat: Some(true),
+            #[cfg(feature = "get-info-full")]
+            uv_acfg: Some(true),
+            #[cfg(feature = "get-info-full")]
+            always_uv: Some(true),
+            cred_mgmt: Some(true),
+            #[cfg(feature = "get-info-full")]
+            authnr_cfg: Some(true),
+            #[cfg(feature = "get-info-full")]
+            bio_enroll: Some(true),
+            client_pin: Some(true),
+            large_blobs: Some(true),
+            #[cfg(feature = "get-info-full")]
+            uv_bio_enroll: Some(true),
+            pin_uv_auth_token: Some(true),
+            #[cfg(feature = "get-info-full")]
+            set_min_pin_length: Some(true),
+            #[cfg(feature = "get-info-full")]
+            make_cred_uv_not_rqd: Some(true),
+            #[cfg(feature = "get-info-full")]
+            credential_mgmt_preview: Some(true),
+            #[cfg(feature = "get-info-full")]
+            user_verification_mgmt_preview: Some(true),
+            #[cfg(feature = "get-info-full")]
+            no_mc_ga_permissions_with_client_pin: Some(true),
+        };
+        crate::test::assert_canonical_cbor(&options);
+    }
+
+    #[test]
+    #[cfg(feature = "get-info-full")]
+    fn test_certifications_canonical() {
+        let certifications = Certifications {
+            fips_cmpv2: Some(1),
+            fips_cmpv3: Some(1),
+            fips_cmpv2_phy: Some(1),
+            fips_cmpv3_phy: Some(1),
+            cc_eal: Some(1),
+            fido: Some(1),
+        };
+        crate::test::assert_canonical_cbor(&certifications);
+    }
 }

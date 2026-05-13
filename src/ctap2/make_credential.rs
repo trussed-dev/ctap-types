@@ -177,4 +177,22 @@ mod tests {
             assert_ser_tokens(&format, &[Token::BorrowedStr(s)]);
         }
     }
+
+    #[test]
+    fn test_extensions_canonical() {
+        let extensions = Extensions {
+            cred_protect: Some(1),
+            hmac_secret: Some(true),
+            large_blob_key: Some(true),
+            #[cfg(feature = "third-party-payment")]
+            third_party_payment: Some(true),
+        };
+        crate::test::assert_canonical_cbor(&extensions);
+    }
+
+    #[test]
+    fn test_unsigned_extension_outputs_canonical() {
+        let outputs = UnsignedExtensionOutputs {};
+        crate::test::assert_canonical_cbor(&outputs);
+    }
 }
