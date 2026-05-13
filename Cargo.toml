@@ -28,6 +28,14 @@ serde_test = "1.0.176"
 [features]
 std = []
 
+# Adds the client-direction codec (Serialize on Request, Deserialize on
+# Response, plus Deserialize on AttestationStatement) so host-side
+# harnesses can build CTAP2 requests and parse CTAP2 responses against
+# a real authenticator. No alloc — the `AttestationStatement` impl is
+# hand-rolled to avoid `#[serde(untagged)]` pulling in `serde/alloc`.
+# Authenticator builds don't need this.
+test-client = []
+
 # implements arbitrary::Arbitrary for requests
 arbitrary = ["dep:arbitrary", "std"]
 # enables all fields for ctap2::get_info
