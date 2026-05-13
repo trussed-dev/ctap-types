@@ -26,7 +26,7 @@ fn parse_argument(additional_info: u8, value: &[u8]) -> (u64, usize) {
 fn parse_value<'a>(data: &'a [u8], path: &str) -> &'a [u8] {
     println!("Checking value {path}");
 
-    assert!(data.len() > 0, "CBOR value must not be empty");
+    assert!(!data.is_empty(), "CBOR value must not be empty");
     let mut offset = 1;
     let major_type = (data[0] & 0b11100000) >> 5;
     let additional_info = data[0] & 0b00011111;

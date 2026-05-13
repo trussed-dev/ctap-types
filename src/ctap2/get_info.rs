@@ -358,11 +358,11 @@ pub struct CtapOptions {
     #[cfg(feature = "get-info-full")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub uv_bio_enroll: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pin_uv_auth_token: Option<bool>,
     #[cfg(feature = "get-info-full")]
     #[serde(rename = "setMinPINLength", skip_serializing_if = "Option::is_none")]
     pub set_min_pin_length: Option<bool>, // default false
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub pin_uv_auth_token: Option<bool>,
     #[cfg(feature = "get-info-full")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub make_cred_uv_not_rqd: Option<bool>,
@@ -418,6 +418,14 @@ impl Default for CtapOptions {
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[non_exhaustive]
 pub struct Certifications {
+    #[serde(rename = "FIDO")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub fido: Option<u8>,
+
+    #[serde(rename = "CC-EAL")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cc_eal: Option<u8>,
+
     #[serde(rename = "FIPS-CMVP-2")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub fips_cmpv2: Option<u8>,
@@ -433,14 +441,6 @@ pub struct Certifications {
     #[serde(rename = "FIPS-CMVP-3-PHY")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub fips_cmpv3_phy: Option<u8>,
-
-    #[serde(rename = "CC-EAL")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub cc_eal: Option<u8>,
-
-    #[serde(rename = "FIDO")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub fido: Option<u8>,
 }
 
 #[cfg(test)]
