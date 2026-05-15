@@ -24,10 +24,17 @@ impl TryFrom<u8> for CredentialProtectionPolicy {
     }
 }
 
+/// Extensions input to `authenticatorMakeCredential`.
+///
+/// Used as `pub extensions: Option<Extensions>` on [`Request`]. For the output
+/// counterpart that ships inside `authenticatorData.extensions`, see
+/// [`ExtensionsOutput`].
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
-#[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
 #[non_exhaustive]
-pub struct Extensions {
+// `Arbitrary` impl lives in `crate::arbitrary` because `&'a serde_bytes::Bytes`
+// (cred_blob) doesn't satisfy `Arbitrary<'_>` and the derive macro can't
+// special-case it. Same pattern as `make_credential::Request<'a>`.
+pub struct Extensions<'a> {
     #[serde(rename = "credProtect")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub cred_protect: Option<u8>,
@@ -45,9 +52,60 @@ pub struct Extensions {
     #[serde(rename = "thirdPartyPayment")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub third_party_payment: Option<bool>,
+
+    /// `credBlob` (CTAP 2.1 §11.1): platform-supplied bytes to associate with
+    /// the credential. Up to `maxCredBlobLength` (≥ 32) bytes per credential.
+    #[serde(rename = "credBlob")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(borrow)]
+    pub cred_blob: Option<&'a serde_bytes::Bytes>,
+
+    /// `hmac-secret-mc` (CTAP 2.2 §11.4.5 / WebAuthn L3): platform-supplied
+    /// hmac-secret request evaluated at MakeCredential time, returning
+    /// hmac-secret outputs alongside the freshly-minted credential.
+    #[serde(rename = "hmac-secret-mc")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub hmac_secret_mc: Option<super::get_assertion::HmacSecretInput>,
+}
+
+/// Extensions output emitted in `authenticatorData.extensions` after
+/// `authenticatorMakeCredential`.
+///
+/// Distinct from [`Extensions`] because some extensions (e.g. `credBlob`) carry
+/// different shapes on input vs output.
+#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
+#[non_exhaustive]
+pub struct ExtensionsOutput {
+    #[serde(rename = "credProtect")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cred_protect: Option<u8>,
+
+    #[serde(rename = "hmac-secret")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub hmac_secret: Option<bool>,
+
+    /// `credBlob` storage acknowledgement: `Some(true)` if the platform-supplied
+    /// blob was stored, `Some(false)` if not stored, absent if the platform did
+    /// not request the extension.
+    #[serde(rename = "credBlob")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cred_blob: Option<bool>,
+
+    /// `hmac-secret-mc` (CTAP 2.2): encrypted hmac-secret outputs produced at
+    /// MakeCredential time. Wire format mirrors GetAssertion's `hmac-secret`
+    /// output — `enc(output1)` or `enc(output1 || output2)`, up to 80 bytes.
+    #[serde(rename = "hmac-secret-mc")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub hmac_secret_mc: Option<crate::Bytes<80>>,
+
+    #[cfg(feature = "third-party-payment")]
+    #[serde(rename = "thirdPartyPayment")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub third_party_payment: Option<bool>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, DeserializeIndexed)]
+#[cfg_attr(feature = "test-client", derive(SerializeIndexed))]
 #[non_exhaustive]
 #[serde_indexed(offset = 1)]
 pub struct Request<'a> {
@@ -58,7 +116,7 @@ pub struct Request<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub exclude_list: Option<Vec<PublicKeyCredentialDescriptorRef<'a>, 16>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extensions: Option<Extensions>,
+    pub extensions: Option<Extensions<'a>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub options: Option<AuthenticatorOptions>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -74,7 +132,7 @@ pub struct Request<'a> {
 pub type AttestationObject = Response;
 
 pub type AuthenticatorData<'a> =
-    super::AuthenticatorData<'a, AttestedCredentialData<'a>, Extensions>;
+    super::AuthenticatorData<'a, AttestedCredentialData<'a>, ExtensionsOutput>;
 
 // NOTE: This is not CBOR, it has a custom encoding...
 // https://www.w3.org/TR/webauthn/#sec-attested-credential-data
@@ -112,6 +170,7 @@ impl super::SerializeAttestedCredentialData for AttestedCredentialData<'_> {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed)]
+#[cfg_attr(feature = "test-client", derive(DeserializeIndexed))]
 #[non_exhaustive]
 #[serde_indexed(offset = 1)]
 pub struct Response {
@@ -147,7 +206,26 @@ impl ResponseBuilder {
     }
 }
 
+impl Response {
+    /// Empty `Response` with default fields. Used by `Authenticator::call_ctap2`
+    /// to preallocate the `Response::MakeCredential` variant slot in the
+    /// outer `ctap2::Response` so the inner `make_credential` impl can write
+    /// via `&mut` — saves the ~6 KB return-by-value copy through the
+    /// dispatch chain. Inner is sized to the type's full capacity
+    /// (`auth_data` is `Bytes<AUTHENTICATOR_DATA_LENGTH>` ≈ 2 KB with
+    /// `mldsa44`); the slot is allocated either way, the win is that it
+    /// lives in ONE place instead of three.
+    pub fn empty() -> Self {
+        ResponseBuilder {
+            fmt: AttestationStatementFormat::None,
+            auth_data: super::SerializedAuthenticatorData::new(),
+        }
+        .build()
+    }
+}
+
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+#[cfg_attr(feature = "test-client", derive(Deserialize))]
 #[non_exhaustive]
 pub struct UnsignedExtensionOutputs {}
 

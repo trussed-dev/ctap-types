@@ -11,6 +11,7 @@ use crate::{sizes::*, Bytes, TryFromStrError};
 
 pub use crate::operation::{Operation, VendorOperation};
 
+pub mod authenticator_config;
 pub mod client_pin;
 pub mod credential_management;
 pub mod get_assertion;
@@ -45,6 +46,8 @@ pub enum Request<'a> {
     Selection,
     // 0xC
     LargeBlobs(large_blobs::Request<'a>),
+    // 0xD
+    AuthenticatorConfig(authenticator_config::Request<'a>),
     // vendor, to be embellished
     // Q: how to handle the associated CBOR structures
     Vendor(crate::operation::VendorOperation),
@@ -118,10 +121,14 @@ impl<'a> Request<'a> {
                 Request::LargeBlobs(cbor_deserialize(data).map_err(CtapMappingError::ParsingError)?)
             }
 
+            Operation::Config => Request::AuthenticatorConfig(
+                cbor_deserialize(data).map_err(CtapMappingError::ParsingError)?,
+            ),
+
             // NB: FIDO Alliance "stole" 0x40 and 0x41, so these are not available
             Operation::Vendor(vendor_operation) => Request::Vendor(vendor_operation),
 
-            Operation::BioEnrollment | Operation::PreviewBioEnrollment | Operation::Config => {
+            Operation::BioEnrollment | Operation::PreviewBioEnrollment => {
                 debug_now!("unhandled CBOR operation {:?}", operation);
                 return Err(CtapMappingError::InvalidCommand(op).into());
             }
@@ -143,6 +150,7 @@ pub enum Response {
     Selection,
     CredentialManagement(credential_management::Response),
     LargeBlobs(large_blobs::Response),
+    AuthenticatorConfig,
     // Q: how to handle the associated CBOR structures
     Vendor,
 }
@@ -161,7 +169,7 @@ impl Response {
             GetAssertion(response) | GetNextAssertion(response) => cbor_serialize(response, data),
             CredentialManagement(response) => cbor_serialize(response, data),
             LargeBlobs(response) => cbor_serialize(response, data),
-            Reset | Selection | Vendor => Ok([].as_slice()),
+            Reset | Selection | AuthenticatorConfig | Vendor => Ok([].as_slice()),
         };
         if let Ok(slice) = outcome {
             *status = 0;
@@ -259,6 +267,52 @@ pub enum AttestationStatement {
     Packed(PackedAttestationStatement),
 }
 
+// Hand-rolled Deserialize avoids serde's `#[serde(untagged)]` machinery,
+// which pulls in `serde::private::de::Content` (alloc-dependent) and
+// would force `serde/alloc` on the whole ctap-types crate. Distinguishes
+// variants by structural shape: `None` is an empty CBOR map; `Packed`
+// has `alg` + `sig` (+ optional `x5c`).
+#[cfg(feature = "test-client")]
+impl<'de> Deserialize<'de> for AttestationStatement {
+    fn deserialize<D>(deserializer: D) -> core::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        struct V;
+        impl<'de> serde::de::Visitor<'de> for V {
+            type Value = AttestationStatement;
+            fn expecting(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+                f.write_str("a CBOR map for an attestation statement")
+            }
+            fn visit_map<A>(self, mut map: A) -> core::result::Result<Self::Value, A::Error>
+            where
+                A: serde::de::MapAccess<'de>,
+            {
+                let mut alg: Option<i32> = None;
+                let mut sig: Option<Bytes<MAX_PACKED_SIG_LENGTH>> = None;
+                let mut x5c: Option<Vec<Bytes<MAX_X5C_CERT_LENGTH>, 1>> = None;
+                while let Some(key) = map.next_key::<&str>()? {
+                    match key {
+                        "alg" => alg = Some(map.next_value()?),
+                        "sig" => sig = Some(map.next_value()?),
+                        "x5c" => x5c = Some(map.next_value()?),
+                        _ => {
+                            let _: serde::de::IgnoredAny = map.next_value()?;
+                        }
+                    }
+                }
+                match (alg, sig) {
+                    (Some(alg), Some(sig)) => Ok(AttestationStatement::Packed(
+                        PackedAttestationStatement { alg, sig, x5c },
+                    )),
+                    _ => Ok(AttestationStatement::None(NoneAttestationStatement {})),
+                }
+            }
+        }
+        deserializer.deserialize_map(V)
+    }
+}
+
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
 #[non_exhaustive]
@@ -295,14 +349,16 @@ impl TryFrom<&str> for AttestationStatementFormat {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+#[cfg_attr(feature = "test-client", derive(Deserialize))]
 pub struct NoneAttestationStatement {}
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+#[cfg_attr(feature = "test-client", derive(Deserialize))]
 pub struct PackedAttestationStatement {
     pub alg: i32,
-    pub sig: Bytes<ASN1_SIGNATURE_LENGTH>,
+    pub sig: Bytes<MAX_PACKED_SIG_LENGTH>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub x5c: Option<Vec<Bytes<1024>, 1>>,
+    pub x5c: Option<Vec<Bytes<MAX_X5C_CERT_LENGTH>, 1>>,
 }
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
@@ -318,6 +374,27 @@ impl AttestationFormatsPreference {
 
     pub fn includes_unknown_formats(&self) -> bool {
         self.unknown
+    }
+}
+
+#[cfg(feature = "test-client")]
+impl Serialize for AttestationFormatsPreference {
+    fn serialize<S>(&self, serializer: S) -> core::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeSeq;
+        // Wire format mirrors the Deserialize impl below: a CBOR array of
+        // attestation-format strings. The `unknown` flag is a parse-time
+        // marker — Deserialize sets it when it sees a string it doesn't
+        // recognize. That source string isn't retained, so we can't round-
+        // trip it; on the way out we only emit the recognized entries.
+        let mut seq = serializer.serialize_seq(Some(self.known_formats.len()))?;
+        for format in &self.known_formats {
+            let s: &str = (*format).into();
+            seq.serialize_element(s)?;
+        }
+        seq.end()
     }
 }
 
@@ -421,14 +498,55 @@ pub enum Error {
 /// [`Response`].
 pub trait Authenticator {
     fn get_info(&mut self) -> get_info::Response;
+
+    /// Build a `MakeCredential` response into the caller-supplied buffer.
+    ///
+    /// Returns by-out-parameter instead of by-value because the response
+    /// is large (~6 KB with `mldsa44` enabled) and the CTAP dispatch chain
+    /// is several layers deep — every layer that carries a
+    /// `Result<Response>` reserves a Response-sized slot in its frame even
+    /// when NRVO would elide the final move. Writing into the caller's
+    /// slot keeps the chain flat (~6 KB total instead of ~6 KB per layer).
+    ///
+    /// Same pattern as `std::io::Read::read_to_end(&mut self, buf: &mut Vec<u8>)`
+    /// / `BufRead::read_line(buf: &mut String)`. For callers that don't
+    /// care about the stack copy, [`Authenticator::make_credential`] is a
+    /// convenience by-value wrapper.
+    fn make_credential_into(
+        &mut self,
+        request: &make_credential::Request,
+        response: &mut make_credential::Response,
+    ) -> Result<()>;
+
+    /// Convenience by-value wrapper around [`make_credential_into`] for
+    /// callers that don't need to avoid the stack copy.
     fn make_credential(
         &mut self,
         request: &make_credential::Request,
-    ) -> Result<make_credential::Response>;
+    ) -> Result<make_credential::Response> {
+        let mut response = make_credential::Response::empty();
+        self.make_credential_into(request, &mut response)?;
+        Ok(response)
+    }
+
+    /// Build a `GetAssertion` response into the caller-supplied buffer.
+    /// See [`make_credential_into`] for the rationale.
+    fn get_assertion_into(
+        &mut self,
+        request: &get_assertion::Request,
+        response: &mut get_assertion::Response,
+    ) -> Result<()>;
+
+    /// Convenience by-value wrapper around [`get_assertion_into`].
     fn get_assertion(
         &mut self,
         request: &get_assertion::Request,
-    ) -> Result<get_assertion::Response>;
+    ) -> Result<get_assertion::Response> {
+        let mut response = get_assertion::Response::empty();
+        self.get_assertion_into(request, &mut response)?;
+        Ok(response)
+    }
+
     fn get_next_assertion(&mut self) -> Result<get_assertion::Response>;
     fn reset(&mut self) -> Result<()>;
     fn client_pin(&mut self, request: &client_pin::Request) -> Result<client_pin::Response>;
@@ -445,110 +563,175 @@ pub trait Authenticator {
         Err(Error::InvalidCommand)
     }
 
-    /// Dispatches the enum of possible requests into the appropriate trait method.
+    fn authenticator_config(&mut self, request: &authenticator_config::Request) -> Result<()> {
+        let _ = request;
+        Err(Error::InvalidCommand)
+    }
+
+    /// Dispatches the enum of possible requests into the appropriate trait
+    /// method. Writes the result into `*response` in place, so the caller
+    /// owns the (~6 KB with `mldsa44`) Response storage and intermediate
+    /// frames don't carry duplicate copies. Saves ~6 KB per chain layer
+    /// vs the previous by-value-return shape.
+    ///
+    /// Each match arm that constructs a non-trivial Response variant is
+    /// outlined into its own `#[inline(never)]` helper below. Without that,
+    /// LLVM reserves a separate stack region for *every* variant's temporary
+    /// in `call_ctap2`'s frame (measured ~29 KB before outlining); with it,
+    /// only the currently-active arm's helper frame is live, shrinking the
+    /// shared dispatch frame to a small jump table.
     #[inline(never)]
-    fn call_ctap2(&mut self, request: &Request) -> Result<Response> {
+    fn call_ctap2(&mut self, request: &Request, response: &mut Response) -> Result<()> {
         match request {
             // 0x4
             Request::GetInfo => {
                 debug_now!("CTAP2.GI");
-                Ok(Response::GetInfo(self.get_info()))
+                self.dispatch_get_info(response)
             }
-
             // 0x2
             Request::MakeCredential(request) => {
                 debug_now!("CTAP2.MC");
-                Ok(Response::MakeCredential(
-                    self.make_credential(request).inspect_err(|_e| {
-                        debug!("error: {:?}", _e);
-                    })?,
-                ))
+                self.dispatch_make_credential(request, response)
             }
-
             // 0x1
             Request::GetAssertion(request) => {
                 debug_now!("CTAP2.GA");
-                Ok(Response::GetAssertion(
-                    self.get_assertion(request).inspect_err(|_e| {
-                        debug!("error: {:?}", _e);
-                    })?,
-                ))
+                self.dispatch_get_assertion(request, response)
             }
-
             // 0x8
             Request::GetNextAssertion => {
                 debug_now!("CTAP2.GNA");
-                Ok(Response::GetNextAssertion(
-                    self.get_next_assertion().inspect_err(|_e| {
-                        debug!("error: {:?}", _e);
-                    })?,
-                ))
+                self.dispatch_get_next_assertion(response)
             }
-
             // 0x7
             Request::Reset => {
                 debug_now!("CTAP2.RST");
                 self.reset().inspect_err(|_e| {
                     debug!("error: {:?}", _e);
                 })?;
-                Ok(Response::Reset)
+                *response = Response::Reset;
+                Ok(())
             }
-
             // 0x6
             Request::ClientPin(request) => {
                 debug_now!("CTAP2.PIN");
-                Ok(Response::ClientPin(self.client_pin(request).inspect_err(
-                    |_e| {
-                        debug!("error: {:?}", _e);
-                    },
-                )?))
+                self.dispatch_client_pin(request, response)
             }
-
             // 0xA
             Request::CredentialManagement(request) => {
                 debug_now!("CTAP2.CM");
-                Ok(Response::CredentialManagement(
-                    self.credential_management(request).inspect_err(|_e| {
-                        debug!("error: {:?}", _e);
-                    })?,
-                ))
+                self.dispatch_credential_management(request, response)
             }
-
             // 0xB
             Request::Selection => {
                 debug_now!("CTAP2.SEL");
                 self.selection().inspect_err(|_e| {
                     debug!("error: {:?}", _e);
                 })?;
-                Ok(Response::Selection)
+                *response = Response::Selection;
+                Ok(())
             }
-
             // 0xC
             Request::LargeBlobs(request) => {
                 debug_now!("CTAP2.LB");
-                Ok(Response::LargeBlobs(
-                    self.large_blobs(request).inspect_err(|_e| {
-                        debug!("error: {:?}", _e);
-                    })?,
-                ))
+                self.dispatch_large_blobs(request, response)
             }
-
+            // 0xD
+            Request::AuthenticatorConfig(request) => {
+                debug_now!("CTAP2.CFG");
+                self.authenticator_config(request).inspect_err(|_e| {
+                    debug!("error: {:?}", _e);
+                })?;
+                *response = Response::AuthenticatorConfig;
+                Ok(())
+            }
             // Not stable
             Request::Vendor(op) => {
                 debug_now!("CTAP2.V");
                 self.vendor(*op).inspect_err(|_e| {
                     debug!("error: {:?}", _e);
                 })?;
-                Ok(Response::Vendor)
+                *response = Response::Vendor;
+                Ok(())
             }
         }
     }
-}
 
-impl<A: Authenticator> crate::Rpc<Error, Request<'_>, Response> for A {
-    /// Dispatches the enum of possible requests into the appropriate trait method.
     #[inline(never)]
-    fn call(&mut self, request: &Request) -> Result<Response> {
-        self.call_ctap2(request)
+    fn dispatch_get_info(&mut self, response: &mut Response) -> Result<()> {
+        *response = Response::GetInfo(self.get_info());
+        Ok(())
+    }
+
+    #[inline(never)]
+    fn dispatch_make_credential(
+        &mut self,
+        request: &make_credential::Request,
+        response: &mut Response,
+    ) -> Result<()> {
+        *response = Response::MakeCredential(make_credential::Response::empty());
+        let Response::MakeCredential(inner) = response else { unreachable!() };
+        self.make_credential_into(request, inner).inspect_err(|_e| {
+            debug!("error: {:?}", _e);
+        })
+    }
+
+    #[inline(never)]
+    fn dispatch_get_assertion(
+        &mut self,
+        request: &get_assertion::Request,
+        response: &mut Response,
+    ) -> Result<()> {
+        *response = Response::GetAssertion(get_assertion::Response::empty());
+        let Response::GetAssertion(inner) = response else { unreachable!() };
+        self.get_assertion_into(request, inner).inspect_err(|_e| {
+            debug!("error: {:?}", _e);
+        })
+    }
+
+    #[inline(never)]
+    fn dispatch_get_next_assertion(&mut self, response: &mut Response) -> Result<()> {
+        *response = Response::GetNextAssertion(self.get_next_assertion().inspect_err(|_e| {
+            debug!("error: {:?}", _e);
+        })?);
+        Ok(())
+    }
+
+    #[inline(never)]
+    fn dispatch_client_pin(
+        &mut self,
+        request: &client_pin::Request,
+        response: &mut Response,
+    ) -> Result<()> {
+        *response = Response::ClientPin(self.client_pin(request).inspect_err(|_e| {
+            debug!("error: {:?}", _e);
+        })?);
+        Ok(())
+    }
+
+    #[inline(never)]
+    fn dispatch_credential_management(
+        &mut self,
+        request: &credential_management::Request,
+        response: &mut Response,
+    ) -> Result<()> {
+        *response = Response::CredentialManagement(
+            self.credential_management(request).inspect_err(|_e| {
+                debug!("error: {:?}", _e);
+            })?,
+        );
+        Ok(())
+    }
+
+    #[inline(never)]
+    fn dispatch_large_blobs(
+        &mut self,
+        request: &large_blobs::Request,
+        response: &mut Response,
+    ) -> Result<()> {
+        *response = Response::LargeBlobs(self.large_blobs(request).inspect_err(|_e| {
+            debug!("error: {:?}", _e);
+        })?);
+        Ok(())
     }
 }

@@ -294,6 +294,68 @@ impl<'a> Arbitrary<'a> for webauthn::PublicKeyCredentialUserEntity {
     }
 }
 
+// cannot be derived because of missing impl for &'a serde_bytes::Bytes (cred_blob).
+// Mirrors the make_credential::Request handling of `pin_auth: Option<&Bytes>`.
+impl<'a> Arbitrary<'a> for ctap2::make_credential::Extensions<'a> {
+    fn arbitrary(u: &mut Unstructured<'a>) -> Result<Self> {
+        let cred_protect = u.arbitrary()?;
+        let hmac_secret = u.arbitrary()?;
+        let large_blob_key = u.arbitrary()?;
+        #[cfg(feature = "third-party-payment")]
+        let third_party_payment = u.arbitrary()?;
+        let cred_blob = if bool::arbitrary(u)? {
+            Some(serde_bytes::Bytes::new(u.arbitrary()?))
+        } else {
+            None
+        };
+        let hmac_secret_mc = u.arbitrary()?;
+        Ok(Self {
+            cred_protect,
+            hmac_secret,
+            large_blob_key,
+            #[cfg(feature = "third-party-payment")]
+            third_party_payment,
+            cred_blob,
+            hmac_secret_mc,
+        })
+    }
+}
+
+// cannot be derived because of missing impl for Vec<&'a str, N> (rp ID list).
+impl<'a> Arbitrary<'a> for ctap2::authenticator_config::SubcommandParameters<'a> {
+    fn arbitrary(u: &mut Unstructured<'a>) -> Result<Self> {
+        let new_min_pin_length = u.arbitrary()?;
+        let min_pin_length_rp_ids = arbitrary_option(u, arbitrary_vec)?;
+        let force_change_pin = u.arbitrary()?;
+        Ok(Self {
+            new_min_pin_length,
+            min_pin_length_rp_ids,
+            force_change_pin,
+        })
+    }
+}
+
+// cannot be derived because of missing impl for &'a serde_bytes::Bytes (pin_auth)
+// + Vec<_> in SubcommandParameters.
+impl<'a> Arbitrary<'a> for ctap2::authenticator_config::Request<'a> {
+    fn arbitrary(u: &mut Unstructured<'a>) -> Result<Self> {
+        let sub_command = u.arbitrary()?;
+        let sub_command_params = u.arbitrary()?;
+        let pin_protocol = u.arbitrary()?;
+        let pin_auth = if bool::arbitrary(u)? {
+            Some(serde_bytes::Bytes::new(u.arbitrary()?))
+        } else {
+            None
+        };
+        Ok(Self {
+            sub_command,
+            sub_command_params,
+            pin_protocol,
+            pin_auth,
+        })
+    }
+}
+
 fn arbitrary_byte_array<'a, const N: usize>(u: &mut Unstructured<'_>) -> Result<&'a ByteArray<N>> {
     let bytes: &[u8; N] = u.bytes(N)?.try_into().unwrap();
     // TODO: conversion should be provided by serde_bytes

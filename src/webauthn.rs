@@ -158,9 +158,11 @@ pub enum UnknownPKCredentialParam {
 pub const ES256: i32 = -7;
 /// EdDSA
 pub const ED_DSA: i32 = -8;
+/// ML-DSA-44 (FIPS 204, NIST level 2)
+pub const ML_DSA_44: i32 = -50;
 
-pub const COUNT_KNOWN_ALGS: usize = 2;
-pub const KNOWN_ALGS: [i32; COUNT_KNOWN_ALGS] = [ES256, ED_DSA];
+pub const COUNT_KNOWN_ALGS: usize = 3;
+pub const KNOWN_ALGS: [i32; COUNT_KNOWN_ALGS] = [ES256, ED_DSA, ML_DSA_44];
 
 impl TryFrom<PublicKeyCredentialParameters> for KnownPublicKeyCredentialParameters {
     type Error = UnknownPKCredentialParam;
