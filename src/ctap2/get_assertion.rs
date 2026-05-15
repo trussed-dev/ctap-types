@@ -1,4 +1,4 @@
-use crate::{Bytes, Vec};
+use crate::{Bytes, String, Vec};
 use cosey::EcdhEsHkdf256PublicKey;
 use serde::{Deserialize, Serialize};
 use serde_bytes::ByteArray;
@@ -176,6 +176,24 @@ impl ResponseBuilder {
             ep_att: None,
             att_stmt: None,
         }
+    }
+}
+
+impl Response {
+    /// Empty `Response` with default fields. Used by `Authenticator::call_ctap2`
+    /// to preallocate the `Response::GetAssertion` variant slot so the inner
+    /// `get_assertion` impl can write via `&mut` — same shape as
+    /// `make_credential::Response::empty()`.
+    pub fn empty() -> Self {
+        ResponseBuilder {
+            credential: PublicKeyCredentialDescriptor {
+                id: Bytes::new(),
+                key_type: String::new(),
+            },
+            auth_data: Bytes::new(),
+            signature: Bytes::new(),
+        }
+        .build()
     }
 }
 
