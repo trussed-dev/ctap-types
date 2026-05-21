@@ -10,11 +10,11 @@ pub type AuthenticatorInfo = Response;
 #[serde_indexed(offset = 1)]
 pub struct Response {
     // 0x01
-    pub versions: Vec<Version, 5>,
+    pub versions: Vec<Version, VERSION_COUNT>,
 
     // 0x02
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extensions: Option<Vec<Extension, 7>>,
+    pub extensions: Option<Vec<Extension, EXTENSION_COUNT>>,
 
     // 0x03
     pub aaguid: Bytes<16>,
@@ -44,7 +44,7 @@ pub struct Response {
     // 0x09
     // FIDO_2_1
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub transports: Option<Vec<Transport, 3>>,
+    pub transports: Option<Vec<Transport, TRANSPORT_COUNT>>,
 
     // 0x0A
     // FIDO_2_1
@@ -154,7 +154,7 @@ impl Default for Response {
 
 #[derive(Debug)]
 pub struct ResponseBuilder {
-    pub versions: Vec<Version, 5>,
+    pub versions: Vec<Version, VERSION_COUNT>,
     pub aaguid: Bytes<16>,
 }
 
@@ -214,6 +214,8 @@ pub enum Version {
     U2fV2,
 }
 
+pub const VERSION_COUNT: usize = 5;
+
 impl Version {
     const FIDO_2_0: &'static str = "FIDO_2_0";
     const FIDO_2_1: &'static str = "FIDO_2_1";
@@ -248,6 +250,8 @@ impl TryFrom<&str> for Version {
         }
     }
 }
+
+pub const EXTENSION_COUNT: usize = 7;
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[non_exhaustive]
@@ -302,6 +306,8 @@ impl TryFrom<&str> for Extension {
         }
     }
 }
+
+pub const TRANSPORT_COUNT: usize = 3;
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[non_exhaustive]
@@ -470,7 +476,7 @@ mod tests {
 
     #[test]
     fn test_serde_version() {
-        let versions = [
+        let versions: [_; VERSION_COUNT] = [
             (Version::Fido2_0, "FIDO_2_0"),
             (Version::Fido2_1, "FIDO_2_1"),
             (Version::Fido2_1Pre, "FIDO_2_1_PRE"),
@@ -484,7 +490,7 @@ mod tests {
 
     #[test]
     fn test_serde_extension() {
-        let extensions = [
+        let extensions: [_; EXTENSION_COUNT] = [
             (Extension::CredProtect, "credProtect"),
             (Extension::CredBlob, "credBlob"),
             (Extension::HmacSecret, "hmac-secret"),
@@ -500,7 +506,7 @@ mod tests {
 
     #[test]
     fn test_serde_transport() {
-        let transports = [
+        let transports: [_; TRANSPORT_COUNT] = [
             (Transport::Nfc, "nfc"),
             (Transport::SmartCard, "smart-card"),
             (Transport::Usb, "usb"),

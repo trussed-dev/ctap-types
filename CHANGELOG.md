@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Add `Version::Fido2_3` variant.
   - Add `Transport::SmartCard` variant.
   - `ctap2::authenticator_config`: Add `Subcommand::EnableLongTouchForReset`.
+- Add `EXTENSION_COUNT`, `TRANSPORT_COUNT` and `VERSION_COUNT` constants for the size of the corresponding enums.
 
 ## [0.5.0] 2026-03-23
 
