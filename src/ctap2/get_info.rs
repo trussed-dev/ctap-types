@@ -10,7 +10,7 @@ pub type AuthenticatorInfo = Response;
 #[serde_indexed(offset = 1)]
 pub struct Response {
     // 0x01
-    pub versions: Vec<Version, 4>,
+    pub versions: Vec<Version, 5>,
 
     // 0x02
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -44,7 +44,7 @@ pub struct Response {
     // 0x09
     // FIDO_2_1
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub transports: Option<Vec<Transport, 4>>,
+    pub transports: Option<Vec<Transport, 3>>,
 
     // 0x0A
     // FIDO_2_1
@@ -154,7 +154,7 @@ impl Default for Response {
 
 #[derive(Debug)]
 pub struct ResponseBuilder {
-    pub versions: Vec<Version, 4>,
+    pub versions: Vec<Version, 5>,
     pub aaguid: Bytes<16>,
 }
 
@@ -210,6 +210,7 @@ pub enum Version {
     Fido2_0,
     Fido2_1,
     Fido2_1Pre,
+    Fido2_3,
     U2fV2,
 }
 
@@ -217,6 +218,7 @@ impl Version {
     const FIDO_2_0: &'static str = "FIDO_2_0";
     const FIDO_2_1: &'static str = "FIDO_2_1";
     const FIDO_2_1_PRE: &'static str = "FIDO_2_1_PRE";
+    const FIDO_2_3: &'static str = "FIDO_2_3";
     const U2F_V2: &'static str = "U2F_V2";
 }
 
@@ -226,6 +228,7 @@ impl From<Version> for &str {
             Version::Fido2_0 => Version::FIDO_2_0,
             Version::Fido2_1 => Version::FIDO_2_1,
             Version::Fido2_1Pre => Version::FIDO_2_1_PRE,
+            Version::Fido2_3 => Version::FIDO_2_3,
             Version::U2fV2 => Version::U2F_V2,
         }
     }
@@ -239,6 +242,7 @@ impl TryFrom<&str> for Version {
             Self::FIDO_2_0 => Ok(Self::Fido2_0),
             Self::FIDO_2_1 => Ok(Self::Fido2_1),
             Self::FIDO_2_1_PRE => Ok(Self::Fido2_1Pre),
+            Self::FIDO_2_3 => Ok(Self::Fido2_3),
             Self::U2F_V2 => Ok(Self::U2fV2),
             _ => Err(TryFromStrError),
         }
@@ -304,11 +308,13 @@ impl TryFrom<&str> for Extension {
 #[serde(into = "&str", try_from = "&str")]
 pub enum Transport {
     Nfc,
+    SmartCard,
     Usb,
 }
 
 impl Transport {
     const NFC: &'static str = "nfc";
+    const SMART_CARD: &'static str = "smart-card";
     const USB: &'static str = "usb";
 }
 
@@ -316,6 +322,7 @@ impl From<Transport> for &str {
     fn from(transport: Transport) -> Self {
         match transport {
             Transport::Nfc => Transport::NFC,
+            Transport::SmartCard => Transport::SMART_CARD,
             Transport::Usb => Transport::USB,
         }
     }
@@ -327,6 +334,7 @@ impl TryFrom<&str> for Transport {
     fn try_from(s: &str) -> Result<Self, Self::Error> {
         match s {
             Self::NFC => Ok(Self::Nfc),
+            Self::SMART_CARD => Ok(Self::SmartCard),
             Self::USB => Ok(Self::Usb),
             _ => Err(TryFromStrError),
         }
@@ -466,6 +474,7 @@ mod tests {
             (Version::Fido2_0, "FIDO_2_0"),
             (Version::Fido2_1, "FIDO_2_1"),
             (Version::Fido2_1Pre, "FIDO_2_1_PRE"),
+            (Version::Fido2_3, "FIDO_2_3"),
             (Version::U2fV2, "U2F_V2"),
         ];
         for (version, s) in versions {
@@ -491,7 +500,11 @@ mod tests {
 
     #[test]
     fn test_serde_transport() {
-        let transports = [(Transport::Nfc, "nfc"), (Transport::Usb, "usb")];
+        let transports = [
+            (Transport::Nfc, "nfc"),
+            (Transport::SmartCard, "smart-card"),
+            (Transport::Usb, "usb"),
+        ];
         for (transport, s) in transports {
             assert_tokens(&transport, &[Token::BorrowedStr(s)]);
         }

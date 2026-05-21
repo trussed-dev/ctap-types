@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Add `minPinLength` extension.
 - Add support for missing CTAP 2.2 features:
   - Add `hmac-secret-mc` extension.
+- Add support for CTAP 2.3:
+  - Add `Version::Fido2_3` variant.
+  - Add `Transport::SmartCard` variant.
+  - `ctap2::authenticator_config`: Add `Subcommand::EnableLongTouchForReset`.
 
 ## [0.5.0] 2026-03-23
 
