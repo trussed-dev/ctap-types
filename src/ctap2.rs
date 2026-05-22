@@ -289,8 +289,8 @@ impl<'de> Deserialize<'de> for AttestationStatement {
                 A: serde::de::MapAccess<'de>,
             {
                 let mut alg: Option<i32> = None;
-                let mut sig: Option<Bytes<MAX_PACKED_SIG_LENGTH>> = None;
-                let mut x5c: Option<Vec<Bytes<MAX_X5C_CERT_LENGTH>, 1>> = None;
+                let mut sig: Option<Bytes<ASN1_SIGNATURE_LENGTH>> = None;
+                let mut x5c: Option<Vec<Bytes<1024>, 1>> = None;
                 while let Some(key) = map.next_key::<&str>()? {
                     match key {
                         "alg" => alg = Some(map.next_value()?),
@@ -302,9 +302,13 @@ impl<'de> Deserialize<'de> for AttestationStatement {
                     }
                 }
                 match (alg, sig) {
-                    (Some(alg), Some(sig)) => Ok(AttestationStatement::Packed(
-                        PackedAttestationStatement { alg, sig, x5c },
-                    )),
+                    (Some(alg), Some(sig)) => {
+                        Ok(AttestationStatement::Packed(PackedAttestationStatement {
+                            alg,
+                            sig,
+                            x5c,
+                        }))
+                    }
                     _ => Ok(AttestationStatement::None(NoneAttestationStatement {})),
                 }
             }
