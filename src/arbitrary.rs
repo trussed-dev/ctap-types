@@ -322,7 +322,7 @@ impl<'a> Arbitrary<'a> for ctap2::make_credential::ExtensionsInput<'a> {
 }
 
 // cannot be derived because of missing impl for Vec<&'a str, N> (rp ID list).
-impl<'a> Arbitrary<'a> for ctap2::authenticator_config::SubcommandParameters<'a> {
+impl<'a> Arbitrary<'a> for ctap2::config::SubcommandParameters<'a> {
     fn arbitrary(u: &mut Unstructured<'a>) -> Result<Self> {
         let new_min_pin_length = u.arbitrary()?;
         let min_pin_length_rp_ids = arbitrary_option(u, arbitrary_vec)?;
@@ -337,7 +337,7 @@ impl<'a> Arbitrary<'a> for ctap2::authenticator_config::SubcommandParameters<'a>
 
 // cannot be derived because of missing impl for &'a serde_bytes::Bytes (pin_auth)
 // + Vec<_> in SubcommandParameters.
-impl<'a> Arbitrary<'a> for ctap2::authenticator_config::Request<'a> {
+impl<'a> Arbitrary<'a> for ctap2::config::Request<'a> {
     fn arbitrary(u: &mut Unstructured<'a>) -> Result<Self> {
         let sub_command = u.arbitrary()?;
         let sub_command_params = u.arbitrary()?;

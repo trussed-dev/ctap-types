@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased]: https://github.com/trussed-dev/ctap-types/compare/0.6.0-rc.1...HEAD
 
--
+- Rename `authenticator_config` to `config`.
 
 ## [0.6.0-rc.1] 2026-05-21
 
