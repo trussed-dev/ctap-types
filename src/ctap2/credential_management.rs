@@ -64,6 +64,7 @@ pub struct Request<'a> {
 }
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, SerializeIndexed)]
+#[cfg_attr(feature = "test-client", derive(DeserializeIndexed))]
 #[non_exhaustive]
 #[serde_indexed(offset = 1)]
 pub struct Response {
