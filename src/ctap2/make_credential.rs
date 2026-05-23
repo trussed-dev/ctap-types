@@ -207,6 +207,24 @@ impl ResponseBuilder {
     }
 }
 
+impl Response {
+    /// Empty `Response` with default fields. Used by `Authenticator::call_ctap2`
+    /// to preallocate the `Response::MakeCredential` variant slot in the
+    /// outer `ctap2::Response` so the inner `make_credential` impl can write
+    /// via `&mut` — saves the ~6 KB return-by-value copy through the
+    /// dispatch chain. Inner is sized to the type's full capacity
+    /// (`auth_data` is `Bytes<AUTHENTICATOR_DATA_LENGTH>` ≈ 2 KB with
+    /// `mldsa44`); the slot is allocated either way, the win is that it
+    /// lives in ONE place instead of three.
+    pub fn empty() -> Self {
+        ResponseBuilder {
+            fmt: AttestationStatementFormat::None,
+            auth_data: super::SerializedAuthenticatorData::new(),
+        }
+        .build()
+    }
+}
+
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
 #[cfg_attr(feature = "test-client", derive(Deserialize))]
 #[non_exhaustive]
