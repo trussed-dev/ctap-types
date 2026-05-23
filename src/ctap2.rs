@@ -11,8 +11,8 @@ use crate::{sizes::*, Bytes, TryFromStrError};
 
 pub use crate::operation::{Operation, VendorOperation};
 
-pub mod authenticator_config;
 pub mod client_pin;
+pub mod config;
 pub mod credential_management;
 pub mod get_assertion;
 pub mod get_info;
@@ -47,7 +47,7 @@ pub enum Request<'a> {
     // 0xC
     LargeBlobs(large_blobs::Request<'a>),
     // 0xD
-    AuthenticatorConfig(authenticator_config::Request<'a>),
+    Config(config::Request<'a>),
     // vendor, to be embellished
     // Q: how to handle the associated CBOR structures
     Vendor(crate::operation::VendorOperation),
@@ -121,9 +121,9 @@ impl<'a> Request<'a> {
                 Request::LargeBlobs(cbor_deserialize(data).map_err(CtapMappingError::ParsingError)?)
             }
 
-            Operation::Config => Request::AuthenticatorConfig(
-                cbor_deserialize(data).map_err(CtapMappingError::ParsingError)?,
-            ),
+            Operation::Config => {
+                Request::Config(cbor_deserialize(data).map_err(CtapMappingError::ParsingError)?)
+            }
 
             // NB: FIDO Alliance "stole" 0x40 and 0x41, so these are not available
             Operation::Vendor(vendor_operation) => Request::Vendor(vendor_operation),
@@ -150,7 +150,7 @@ pub enum Response {
     Selection,
     CredentialManagement(credential_management::Response),
     LargeBlobs(large_blobs::Response),
-    AuthenticatorConfig,
+    Config,
     // Q: how to handle the associated CBOR structures
     Vendor,
 }
@@ -169,7 +169,7 @@ impl Response {
             GetAssertion(response) | GetNextAssertion(response) => cbor_serialize(response, data),
             CredentialManagement(response) => cbor_serialize(response, data),
             LargeBlobs(response) => cbor_serialize(response, data),
-            Reset | Selection | AuthenticatorConfig | Vendor => Ok([].as_slice()),
+            Reset | Selection | Config | Vendor => Ok([].as_slice()),
         };
         if let Ok(slice) = outcome {
             *status = 0;
@@ -526,7 +526,7 @@ pub trait Authenticator {
         Err(Error::InvalidCommand)
     }
 
-    fn authenticator_config(&mut self, request: &authenticator_config::Request) -> Result<()> {
+    fn config(&mut self, request: &config::Request) -> Result<()> {
         let _ = request;
         Err(Error::InvalidCommand)
     }
@@ -620,12 +620,12 @@ pub trait Authenticator {
             }
 
             // 0xD
-            Request::AuthenticatorConfig(request) => {
+            Request::Config(request) => {
                 debug_now!("CTAP2.CFG");
-                self.authenticator_config(request).inspect_err(|_e| {
+                self.config(request).inspect_err(|_e| {
                     debug!("error: {:?}", _e);
                 })?;
-                Ok(Response::AuthenticatorConfig)
+                Ok(Response::Config)
             }
 
             // Not stable
