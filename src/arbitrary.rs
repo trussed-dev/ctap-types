@@ -301,6 +301,7 @@ impl<'a> Arbitrary<'a> for ctap2::make_credential::ExtensionsInput<'a> {
         let cred_protect = u.arbitrary()?;
         let hmac_secret = u.arbitrary()?;
         let large_blob_key = u.arbitrary()?;
+        let min_pin_length = u.arbitrary()?;
         #[cfg(feature = "third-party-payment")]
         let third_party_payment = u.arbitrary()?;
         let cred_blob = if bool::arbitrary(u)? {
@@ -313,6 +314,7 @@ impl<'a> Arbitrary<'a> for ctap2::make_credential::ExtensionsInput<'a> {
             cred_protect,
             hmac_secret,
             large_blob_key,
+            min_pin_length,
             #[cfg(feature = "third-party-payment")]
             third_party_payment,
             cred_blob,

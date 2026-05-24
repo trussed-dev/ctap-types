@@ -51,6 +51,10 @@ pub struct ExtensionsInput<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub large_blob_key: Option<bool>,
 
+    #[serde(rename = "minPinLength")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub min_pin_length: Option<bool>,
+
     /// `hmac-secret-mc` (CTAP 2.2 §11.4.5 / WebAuthn L3): platform-supplied
     /// hmac-secret request evaluated at MakeCredential time, returning
     /// hmac-secret outputs alongside the freshly-minted credential.
@@ -83,6 +87,10 @@ pub struct ExtensionsOutput {
     #[serde(rename = "hmac-secret")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub hmac_secret: Option<bool>,
+
+    #[serde(rename = "minPinLength")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub min_pin_length: Option<u8>,
 
     /// `hmac-secret-mc` (CTAP 2.2): encrypted hmac-secret outputs produced at
     /// MakeCredential time. Wire format mirrors GetAssertion's `hmac-secret`
@@ -239,6 +247,7 @@ mod tests {
             cred_protect: Some(1),
             hmac_secret: Some(true),
             large_blob_key: Some(true),
+            min_pin_length: Some(true),
             #[cfg(feature = "third-party-payment")]
             third_party_payment: Some(true),
             cred_blob: Some(serde_bytes::Bytes::new(b"1234")),
@@ -260,6 +269,7 @@ mod tests {
         let extensions = ExtensionsOutput {
             cred_protect: Some(1),
             hmac_secret: Some(true),
+            min_pin_length: Some(6),
             #[cfg(feature = "third-party-payment")]
             third_party_payment: Some(true),
             cred_blob: Some(true),
