@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Rename `authenticator_config` to `config`.
 - Add `platform-serde` feature for additional `Serialize` and `Deserialize` implementations not required by authenticators.
+- Add `ctap2::client_pin::MAX_PIN_LENGTH` and `ctap2::config::{DEFAULT_MIN_PIN_LENGTH, MAX_RP_ID_LENGTH, MAX_SUBCOMMAND_PARAMS_CBOR_LEN}` constants.
+- Add `min_pin_length` to `make_credential::{ExtensionsInput, ExtensionsOutput}`.
 
 ## [0.6.0-rc.1] 2026-05-21
 

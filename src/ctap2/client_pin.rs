@@ -31,9 +31,13 @@ bitflags! {
     }
 }
 
-// minimum PIN length: 4 unicode
-// maximum PIN length: UTF-8 represented by <= 63 bytes
-// maximum consecutive incorrect PIN attempts: 8
+// minimum PIN length: 4 unicode (see `config::DEFAULT_MIN_PIN_LENGTH`).
+// maximum consecutive incorrect PIN attempts: 8.
+
+/// CTAP 2.1 §6.5.1: "Maximum PIN Length: 63 bytes." Authenticators MUST
+/// NOT accept PINs whose UTF-8 byte representation exceeds this. Applies
+/// to `setPin` and `changePin`'s decrypted `newPinEnc`.
+pub const MAX_PIN_LENGTH: usize = 63;
 
 #[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed, DeserializeIndexed)]
 #[non_exhaustive]

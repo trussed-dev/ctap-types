@@ -11,6 +11,28 @@ use crate::Vec;
 
 pub const MAX_MIN_PIN_LENGTH_RP_IDS: usize = 4;
 
+/// CTAP 2.1 §6.5.1: "Minimum PIN Length: 4 code points." Spec floor for
+/// `minPINLength` — the authenticator MUST NOT accept a shorter PIN and
+/// `setMinPINLength` MUST NOT lower the effective minimum below this.
+pub const DEFAULT_MIN_PIN_LENGTH: u8 = 4;
+
+/// A RP-ID is a DNS hostname, max 253 bytes.
+pub const MAX_RP_ID_LENGTH: usize = 253;
+
+/// Worst-case CBOR-encoded length of [`SubcommandParameters`].
+///
+/// Derivation:
+/// - `a3`                                    map(3)                       1
+/// - key 0x01 + `new_min_pin_length: u8`     `01` + `18 xx`               3
+/// - key 0x02 + `min_pin_length_rp_ids` array of N strings:
+///   N = [`MAX_MIN_PIN_LENGTH_RP_IDS`]; text-hdr `78 LL` is 2 bytes for
+///   lengths 24..=255.   1 (key) + 1 (arr hdr) + 4 × (2 + 253)       = 1028
+/// - key 0x03 + `force_change_pin: bool`     `03` + `f4`/`f5`             2
+///
+/// Sum: 1 + 3 + 1028 + 2 = 1034. Rounded up to give a small safety
+/// margin against future field additions.
+pub const MAX_SUBCOMMAND_PARAMS_CBOR_LEN: usize = 1100;
+
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize_repr, Deserialize_repr)]
 #[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
 #[non_exhaustive]
@@ -175,5 +197,21 @@ mod tests {
                 Token::MapEnd,
             ],
         );
+    }
+
+    #[test]
+    fn test_max_subcommand_params_cbor_len() {
+        let rp_id = "a".repeat(253);
+        let mut rp_ids = Vec::new();
+        rp_ids.resize(4, rp_id.as_str()).unwrap();
+        let params = SubcommandParameters {
+            new_min_pin_length: Some(u8::MAX),
+            min_pin_length_rp_ids: Some(rp_ids),
+            force_change_pin: Some(true),
+        };
+
+        let mut buffer = [0; MAX_SUBCOMMAND_PARAMS_CBOR_LEN];
+        let result = cbor_smol::cbor_serialize(&params, &mut buffer);
+        assert_eq!(result.err(), None);
     }
 }
