@@ -1,4 +1,4 @@
-use crate::{Bytes, Vec};
+use crate::{Bytes, String, Vec};
 use cosey::EcdhEsHkdf256PublicKey;
 use serde::{Deserialize, Serialize};
 use serde_bytes::ByteArray;
@@ -103,6 +103,7 @@ pub type AuthenticatorData<'a> =
 pub type AllowList<'a> = Vec<PublicKeyCredentialDescriptorRef<'a>, MAX_CREDENTIAL_COUNT_IN_LIST>;
 
 #[derive(Clone, Debug, Eq, PartialEq, DeserializeIndexed)]
+#[cfg_attr(feature = "test-client", derive(SerializeIndexed))]
 #[non_exhaustive]
 #[serde_indexed(offset = 1)]
 pub struct Request<'a> {
@@ -128,12 +129,13 @@ pub struct Request<'a> {
 // https://fidoalliance.org/specs/fido-v2.0-ps-20190130/fido-client-to-authenticator-protocol-v2.0-ps-20190130.html#authenticatorMakeCredential
 // does not coincide with what python-fido2 expects in AttestationObject.__init__ *at all* :'-)
 #[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed)]
+#[cfg_attr(feature = "test-client", derive(DeserializeIndexed))]
 #[non_exhaustive]
 #[serde_indexed(offset = 1)]
 pub struct Response {
     pub credential: PublicKeyCredentialDescriptor,
     pub auth_data: Bytes<AUTHENTICATOR_DATA_LENGTH>,
-    pub signature: Bytes<ASN1_SIGNATURE_LENGTH>,
+    pub signature: Bytes<MAX_PACKED_SIG_LENGTH>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub user: Option<PublicKeyCredentialUserEntity>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -156,7 +158,7 @@ pub struct Response {
 pub struct ResponseBuilder {
     pub credential: PublicKeyCredentialDescriptor,
     pub auth_data: Bytes<AUTHENTICATOR_DATA_LENGTH>,
-    pub signature: Bytes<ASN1_SIGNATURE_LENGTH>,
+    pub signature: Bytes<MAX_PACKED_SIG_LENGTH>,
 }
 
 impl ResponseBuilder {
@@ -174,6 +176,24 @@ impl ResponseBuilder {
             ep_att: None,
             att_stmt: None,
         }
+    }
+}
+
+impl Response {
+    /// Empty `Response` with default fields. Used by `Authenticator::call_ctap2`
+    /// to preallocate the `Response::GetAssertion` variant slot so the inner
+    /// `get_assertion` impl can write via `&mut` — same shape as
+    /// `make_credential::Response::empty()`.
+    pub fn empty() -> Self {
+        ResponseBuilder {
+            credential: PublicKeyCredentialDescriptor {
+                id: Bytes::new(),
+                key_type: String::new(),
+            },
+            auth_data: Bytes::new(),
+            signature: Bytes::new(),
+        }
+        .build()
     }
 }
 

@@ -1,6 +1,6 @@
 [package]
 name = "ctap-types"
-version = "0.6.0-rc.1"
+version = "0.6.0-rc.2"
 authors = ["Nicolas Stalder <n@stalder.io>", "The Trussed developers"]
 edition = "2021"
 license = "Apache-2.0 OR MIT"
@@ -31,12 +31,25 @@ serde_test = "1.0.176"
 [features]
 std = []
 
+# Adds the client-direction codec (Serialize on Request, Deserialize on
+# Response, plus Deserialize on AttestationStatement) so host-side
+# harnesses can build CTAP2 requests and parse CTAP2 responses against
+# a real authenticator. No alloc — the `AttestationStatement` impl is
+# hand-rolled to avoid `#[serde(untagged)]` pulling in `serde/alloc`.
+# Authenticator builds don't need this.
+test-client = []
+
 # implements arbitrary::Arbitrary for requests
 arbitrary = ["dep:arbitrary", "std"]
 # enables all fields for ctap2::get_info
 get-info-full = []
 # enables support for implementing the large-blobs extension, see src/sizes.rs
 large-blobs = []
+# Bumps `MAX_PACKED_SIG_LENGTH`, `MAX_X5C_CERT_LENGTH`, and
+# `AUTHENTICATOR_DATA_LENGTH` so packed attestation can carry an
+# ML-DSA-44 (CTAP 2.3 alg -50) signature (2420 B) alongside the larger
+# COSE_Key (1322 B) inside authData. See `src/sizes.rs`.
+mldsa44 = []
 third-party-payment = []
 
 log-all = []

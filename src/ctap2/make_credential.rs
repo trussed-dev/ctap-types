@@ -51,6 +51,10 @@ pub struct ExtensionsInput<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub large_blob_key: Option<bool>,
 
+    #[serde(rename = "minPinLength")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub min_pin_length: Option<bool>,
+
     /// `hmac-secret-mc` (CTAP 2.2 §11.4.5 / WebAuthn L3): platform-supplied
     /// hmac-secret request evaluated at MakeCredential time, returning
     /// hmac-secret outputs alongside the freshly-minted credential.
@@ -84,6 +88,10 @@ pub struct ExtensionsOutput {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub hmac_secret: Option<bool>,
 
+    #[serde(rename = "minPinLength")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub min_pin_length: Option<u8>,
+
     /// `hmac-secret-mc` (CTAP 2.2): encrypted hmac-secret outputs produced at
     /// MakeCredential time. Wire format mirrors GetAssertion's `hmac-secret`
     /// output — `enc(output1)` or `enc(output1 || output2)`, up to 80 bytes.
@@ -98,6 +106,7 @@ pub struct ExtensionsOutput {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, DeserializeIndexed)]
+#[cfg_attr(feature = "test-client", derive(SerializeIndexed))]
 #[non_exhaustive]
 #[serde_indexed(offset = 1)]
 pub struct Request<'a> {
@@ -162,6 +171,7 @@ impl super::SerializeAttestedCredentialData for AttestedCredentialData<'_> {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, SerializeIndexed)]
+#[cfg_attr(feature = "test-client", derive(DeserializeIndexed))]
 #[non_exhaustive]
 #[serde_indexed(offset = 1)]
 pub struct Response {
@@ -197,7 +207,26 @@ impl ResponseBuilder {
     }
 }
 
+impl Response {
+    /// Empty `Response` with default fields. Used by `Authenticator::call_ctap2`
+    /// to preallocate the `Response::MakeCredential` variant slot in the
+    /// outer `ctap2::Response` so the inner `make_credential` impl can write
+    /// via `&mut` — saves the ~6 KB return-by-value copy through the
+    /// dispatch chain. Inner is sized to the type's full capacity
+    /// (`auth_data` is `Bytes<AUTHENTICATOR_DATA_LENGTH>` ≈ 2 KB with
+    /// `mldsa44`); the slot is allocated either way, the win is that it
+    /// lives in ONE place instead of three.
+    pub fn empty() -> Self {
+        ResponseBuilder {
+            fmt: AttestationStatementFormat::None,
+            auth_data: super::SerializedAuthenticatorData::new(),
+        }
+        .build()
+    }
+}
+
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+#[cfg_attr(feature = "test-client", derive(Deserialize))]
 #[non_exhaustive]
 pub struct UnsignedExtensionOutputs {}
 
@@ -236,6 +265,7 @@ mod tests {
             cred_protect: Some(1),
             hmac_secret: Some(true),
             large_blob_key: Some(true),
+            min_pin_length: Some(true),
             #[cfg(feature = "third-party-payment")]
             third_party_payment: Some(true),
             cred_blob: Some(serde_bytes::Bytes::new(b"1234")),
@@ -257,6 +287,7 @@ mod tests {
         let extensions = ExtensionsOutput {
             cred_protect: Some(1),
             hmac_secret: Some(true),
+            min_pin_length: Some(6),
             #[cfg(feature = "third-party-payment")]
             third_party_payment: Some(true),
             cred_blob: Some(true),
