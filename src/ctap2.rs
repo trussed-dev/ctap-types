@@ -64,6 +64,7 @@ impl From<CtapMappingError> for Error {
             CtapMappingError::InvalidCommand(_cmd) => Error::InvalidCommand,
             CtapMappingError::ParsingError(cbor_error) => match cbor_error {
                 cbor_smol::Error::SerdeMissingField => Error::MissingParameter,
+                cbor_smol::Error::DeserializeBadBool => Error::CborUnexpectedType,
                 _ => Error::InvalidCbor,
             },
         }
