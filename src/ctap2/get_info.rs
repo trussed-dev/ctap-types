@@ -1,4 +1,6 @@
 use crate::webauthn::FilteredPublicKeyCredentialParameters;
+#[cfg(feature = "get-info-full")]
+use crate::String;
 use crate::{Bytes, TryFromStrError, Vec};
 use serde::{Deserialize, Serialize};
 use serde_indexed::{DeserializeIndexed, SerializeIndexed};
@@ -133,6 +135,48 @@ pub struct Response {
     #[cfg(feature = "get-info-full")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub long_touch_for_reset: Option<bool>,
+
+    // 0x19
+    // FIDO_2_3
+    #[cfg(feature = "get-info-full")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub enc_identifier: Option<String<64>>,
+
+    // 0x1A
+    // FIDO_2_3
+    #[cfg(feature = "get-info-full")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub transports_for_reset: Option<Vec<String<8>, 4>>,
+
+    // 0x1B
+    // FIDO_2_3
+    #[cfg(feature = "get-info-full")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pin_complexity_policy: Option<bool>,
+
+    // 0x1C
+    // FIDO_2_3
+    #[cfg(feature = "get-info-full")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pin_complexity_policy_url: Option<String<128>>,
+
+    // 0x1D
+    // FIDO_2_3
+    #[cfg(feature = "get-info-full")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_pin_length: Option<u8>,
+
+    // 0x1E
+    // FIDO_2_3
+    #[cfg(feature = "get-info-full")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub enc_cred_store_state: Option<String<64>>,
+
+    // 0x1F
+    // FIDO_2_3
+    #[cfg(feature = "get-info-full")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub authenticator_config_commands: Option<Vec<u8, 4>>,
 }
 
 impl Default for Response {
@@ -199,6 +243,20 @@ impl ResponseBuilder {
             uv_count_since_last_pin_entry: None,
             #[cfg(feature = "get-info-full")]
             long_touch_for_reset: None,
+            #[cfg(feature = "get-info-full")]
+            enc_identifier: None,
+            #[cfg(feature = "get-info-full")]
+            transports_for_reset: None,
+            #[cfg(feature = "get-info-full")]
+            pin_complexity_policy: None,
+            #[cfg(feature = "get-info-full")]
+            pin_complexity_policy_url: None,
+            #[cfg(feature = "get-info-full")]
+            max_pin_length: None,
+            #[cfg(feature = "get-info-full")]
+            enc_cred_store_state: None,
+            #[cfg(feature = "get-info-full")]
+            authenticator_config_commands: None,
         }
     }
 }

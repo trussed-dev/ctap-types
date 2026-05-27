@@ -8,7 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased]: https://github.com/trussed-dev/ctap-types/compare/0.6.0-rc.2...HEAD
 
--
+- Add fields 0x19 to 0x1F to `ctap2::get_info::Response`.
+- Map `cbor_smol::Error::DeserializeBadBool` to `Error::CborUnexpectedType` instead of `Error::InvalidCbor`.
 
 ## [0.6.0-rc.2] 2026-05-27
 
