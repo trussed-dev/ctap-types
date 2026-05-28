@@ -49,3 +49,6 @@ log-info = []
 log-debug = []
 log-warn = []
 log-error = []
+
+[package.metadata.docs.rs]
+all-features = true
