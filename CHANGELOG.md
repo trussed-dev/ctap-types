@@ -6,14 +6,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/trussed-dev/ctap-types/compare/0.6.0-rc.2...HEAD
+[Unreleased]: https://github.com/trussed-dev/ctap-types/compare/0.6.0-rc.3...HEAD
+
+-
+
+## [0.6.0-rc.3] 2026-05-28
+
+[0.6.0-rc.3]: https://github.com/trussed-dev/ctap-types/compare/0.6.0-rc.2...0.6.0-rc.3
 
 - Add fields 0x19 to 0x1F to `ctap2::get_info::Response`.
 - Map `cbor_smol::Error::DeserializeBadBool` to `Error::CborUnexpectedType` instead of `Error::InvalidCbor`.
 
 ## [0.6.0-rc.2] 2026-05-27
 
-[0.6.0-rc.1]: https://github.com/trussed-dev/ctap-types/compare/0.6.0-rc.2...0.6.0-rc.2
+[0.6.0-rc.2]: https://github.com/trussed-dev/ctap-types/compare/0.6.0-rc.1...0.6.0-rc.2
 
 - Rename `authenticator_config` to `config`.
 - Add `platform-serde` feature for additional `Serialize` and `Deserialize` implementations not required by authenticators.
