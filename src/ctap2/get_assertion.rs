@@ -135,7 +135,7 @@ pub struct Request<'a> {
 pub struct Response {
     pub credential: PublicKeyCredentialDescriptor,
     pub auth_data: Bytes<AUTHENTICATOR_DATA_LENGTH>,
-    pub signature: Bytes<ASN1_SIGNATURE_LENGTH>,
+    pub signature: Bytes<MAX_PACKED_SIG_LENGTH>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub user: Option<PublicKeyCredentialUserEntity>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -158,7 +158,7 @@ pub struct Response {
 pub struct ResponseBuilder {
     pub credential: PublicKeyCredentialDescriptor,
     pub auth_data: Bytes<AUTHENTICATOR_DATA_LENGTH>,
-    pub signature: Bytes<ASN1_SIGNATURE_LENGTH>,
+    pub signature: Bytes<MAX_PACKED_SIG_LENGTH>,
 }
 
 impl ResponseBuilder {

@@ -292,8 +292,8 @@ impl<'de> Deserialize<'de> for AttestationStatement {
                 use serde::de::Error as _;
 
                 let mut alg: Option<i32> = None;
-                let mut sig: Option<Bytes<ASN1_SIGNATURE_LENGTH>> = None;
-                let mut x5c: Option<Vec<Bytes<1024>, 1>> = None;
+                let mut sig: Option<Bytes<MAX_PACKED_SIG_LENGTH>> = None;
+                let mut x5c: Option<Vec<Bytes<MAX_X5C_CERT_LENGTH>, 1>> = None;
                 let mut has_values = false;
                 while let Some(key) = map.next_key::<&str>()? {
                     has_values = true;
@@ -366,9 +366,9 @@ pub struct NoneAttestationStatement {}
 #[cfg_attr(feature = "platform-serde", derive(Deserialize))]
 pub struct PackedAttestationStatement {
     pub alg: i32,
-    pub sig: Bytes<ASN1_SIGNATURE_LENGTH>,
+    pub sig: Bytes<MAX_PACKED_SIG_LENGTH>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub x5c: Option<Vec<Bytes<1024>, 1>>,
+    pub x5c: Option<Vec<Bytes<MAX_X5C_CERT_LENGTH>, 1>>,
 }
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
@@ -561,7 +561,14 @@ pub trait Authenticator {
         Ok(response)
     }
 
-    fn get_next_assertion(&mut self) -> Result<get_assertion::Response>;
+    fn get_next_assertion_into(&mut self, response: &mut get_assertion::Response) -> Result<()>;
+
+    fn get_next_assertion(&mut self) -> Result<get_assertion::Response> {
+        let mut response = get_assertion::Response::empty();
+        self.get_next_assertion_into(&mut response)?;
+        Ok(response)
+    }
+
     fn reset(&mut self) -> Result<()>;
     fn client_pin(&mut self, request: &client_pin::Request) -> Result<client_pin::Response>;
     fn credential_management(
@@ -709,10 +716,13 @@ pub trait Authenticator {
 
     #[inline(never)]
     fn dispatch_get_next_assertion(&mut self, response: &mut Response) -> Result<()> {
-        *response = Response::GetNextAssertion(self.get_next_assertion().inspect_err(|_e| {
+        *response = Response::GetNextAssertion(get_assertion::Response::empty());
+        let Response::GetNextAssertion(inner) = response else {
+            unreachable!()
+        };
+        self.get_next_assertion_into(inner).inspect_err(|_e| {
             debug!("error: {:?}", _e);
-        })?);
-        Ok(())
+        })
     }
 
     #[inline(never)]

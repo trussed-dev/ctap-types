@@ -142,15 +142,49 @@ impl PublicKeyCredentialUserEntity {
 pub enum KnownPublicKeyCredentialParameters {
     ES256,
     EdDSA,
+    #[cfg(feature = "mldsa44")]
+    MLDSA44,
+    #[cfg(feature = "mldsa65")]
+    MLDSA65,
+    #[cfg(feature = "mldsa87")]
+    MLDSA87,
 }
 
 impl KnownPublicKeyCredentialParameters {
-    pub const ALL: [Self; COUNT_KNOWN_ALGS] = [Self::ES256, Self::EdDSA];
+    pub const ALL: [Self; COUNT_KNOWN_ALGS] = {
+        let mut all = [Self::ES256; COUNT_KNOWN_ALGS];
+        let mut i = 1;
+        all[i] = Self::EdDSA;
+        i += 1;
+        #[cfg(feature = "mldsa44")]
+        {
+            all[i] = Self::MLDSA44;
+            i += 1;
+        }
+        #[cfg(feature = "mldsa65")]
+        {
+            all[i] = Self::MLDSA65;
+            i += 1;
+        }
+        #[cfg(feature = "mldsa87")]
+        {
+            all[i] = Self::MLDSA87;
+            i += 1;
+        }
+        let _ = i;
+        all
+    };
 
     pub fn alg(&self) -> i32 {
         match self {
             Self::ES256 => ES256,
             Self::EdDSA => ED_DSA,
+            #[cfg(feature = "mldsa44")]
+            Self::MLDSA44 => ML_DSA_44,
+            #[cfg(feature = "mldsa65")]
+            Self::MLDSA65 => ML_DSA_65,
+            #[cfg(feature = "mldsa87")]
+            Self::MLDSA87 => ML_DSA_87,
         }
     }
 }
@@ -173,8 +207,20 @@ pub enum UnknownPKCredentialParam {
 const ES256: i32 = -7;
 /// EdDSA
 const ED_DSA: i32 = -8;
+/// ML-DSA-44 (FIPS 204, NIST level 2)
+#[cfg(feature = "mldsa44")]
+pub const ML_DSA_44: i32 = -48;
+/// ML-DSA-65 (FIPS 204, NIST level 3)
+#[cfg(feature = "mldsa65")]
+pub const ML_DSA_65: i32 = -49;
+/// ML-DSA-87 (FIPS 204, NIST level 5)
+#[cfg(feature = "mldsa87")]
+pub const ML_DSA_87: i32 = -50;
 
-pub const COUNT_KNOWN_ALGS: usize = 2;
+pub const COUNT_KNOWN_ALGS: usize = 2
+    + cfg!(feature = "mldsa44") as usize
+    + cfg!(feature = "mldsa65") as usize
+    + cfg!(feature = "mldsa87") as usize;
 
 impl TryFrom<PublicKeyCredentialParameters> for KnownPublicKeyCredentialParameters {
     type Error = UnknownPKCredentialParam;
@@ -186,6 +232,12 @@ impl TryFrom<PublicKeyCredentialParameters> for KnownPublicKeyCredentialParamete
             match value.alg {
                 ES256 => Ok(Self::ES256),
                 ED_DSA => Ok(Self::EdDSA),
+                #[cfg(feature = "mldsa44")]
+                ML_DSA_44 => Ok(Self::MLDSA44),
+                #[cfg(feature = "mldsa65")]
+                ML_DSA_65 => Ok(Self::MLDSA65),
+                #[cfg(feature = "mldsa87")]
+                ML_DSA_87 => Ok(Self::MLDSA87),
                 _ => Err(UnknownPKCredentialParam::UnknownAlg),
             }
         }

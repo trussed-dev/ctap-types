@@ -41,6 +41,10 @@ arbitrary = ["dep:arbitrary", "std"]
 get-info-full = []
 # enables support for implementing the large-blobs extension, see src/sizes.rs
 large-blobs = []
+# Size bumps in src/sizes.rs for ML-DSA packed attestation.
+mldsa44 = []
+mldsa65 = []
+mldsa87 = []
 third-party-payment = []
 
 log-all = []
