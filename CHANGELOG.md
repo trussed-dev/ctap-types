@@ -6,51 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/trussed-dev/ctap-types/compare/0.6.0-rc.5...HEAD
+[Unreleased]: https://github.com/trussed-dev/ctap-types/compare/0.6.0...HEAD
 
 -
 
-## [0.6.0-rc.5] 2026-06-08
+## [0.6.0] 2026-11-20
 
-[0.6.0-rc.5]: https://github.com/trussed-dev/ctap-types/compare/0.6.0-rc.4...0.6.0-rc.5
+[0.6.0]: https://github.com/trussed-dev/ctap-types/compare/0.5.0...0.6.0
 
-- Remove unused `Rpc` trait.
-- Remove `cbor-smol` re-export as `serde`.
-- Make `ctap2::CtapMappingError` private.
-- Set `#[repr(u8)]` for `ctap2::Error` and implement `From<ctap2::Error>` for `u8`.
-- `ctap2::get_info`: Use `ByteArray<16>` instead of `Bytes<16>` for AAGUID.
-- Remove re-exports for `heapless` and `heapless-bytes` as the relevant types are already re-exported.
-- `ctap2::get_info`: Use subcommand enum for `authenticator_config_commands`.
-- `webauthn`: Make `KnownPublicKeyCredentialParameters` an enum.
-- `authenticator`: Move `Authenticator`, `Request` and `Response` to the crate root.
+### Features
 
-## [0.6.0-rc.4] 2026-06-01
-
-[0.6.0-rc.4]: https://github.com/trussed-dev/ctap-types/compare/0.6.0-rc.3...0.6.0-rc.4
-
-- Improve `Authenticator` trait to reduce stack usage.
-
-## [0.6.0-rc.3] 2026-05-28
-
-[0.6.0-rc.3]: https://github.com/trussed-dev/ctap-types/compare/0.6.0-rc.2...0.6.0-rc.3
-
-- Add fields 0x19 to 0x1F to `ctap2::get_info::Response`.
-- Map `cbor_smol::Error::DeserializeBadBool` to `Error::CborUnexpectedType` instead of `Error::InvalidCbor`.
-
-## [0.6.0-rc.2] 2026-05-27
-
-[0.6.0-rc.2]: https://github.com/trussed-dev/ctap-types/compare/0.6.0-rc.1...0.6.0-rc.2
-
-- Rename `authenticator_config` to `config`.
-- Add `platform-serde` feature for additional `Serialize` and `Deserialize` implementations not required by authenticators.
-- Add `ctap2::client_pin::MAX_PIN_LENGTH` and `ctap2::config::{DEFAULT_MIN_PIN_LENGTH, MAX_RP_ID_LENGTH, MAX_SUBCOMMAND_PARAMS_CBOR_LEN}` constants.
-- Add `min_pin_length` to `make_credential::{ExtensionsInput, ExtensionsOutput}`.
-
-## [0.6.0-rc.1] 2026-05-21
-
-[0.6.0-rc.1]: https://github.com/trussed-dev/ctap-types/compare/0.5.0...0.6.0-rc.1
-
-- `ctap2::get_info`: Fix field order of the `CtapOptions` and `Certifications` structs to produce canonical CBOR
 - Add support for missing CTAP 2.1 features:
   - Add `AuthenticatorConfig` command.
   - Add `credBlob` extension and split `make_credential::Extensions` into `ExtensionsInput` and `ExtensionsOutput`.
@@ -61,7 +26,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Add `Version::Fido2_3` variant.
   - Add `Transport::SmartCard` variant.
   - `ctap2::authenticator_config`: Add `Subcommand::EnableLongTouchForReset`.
+
+### Breaking Changes
+
+- Rename `authenticator_config` to `config`.
+- Map `cbor_smol::Error::DeserializeBadBool` to `Error::CborUnexpectedType` instead of `Error::InvalidCbor`.
+- Improve `Authenticator` trait to reduce stack usage.
+- Remove unused `Rpc` trait.
+- Remove `cbor-smol` re-export as `serde`.
+- Make `ctap2::CtapMappingError` private.
+- `ctap2::get_info`: Use `ByteArray<16>` instead of `Bytes<16>` for AAGUID.
+- Remove re-exports for `heapless` and `heapless-bytes` as the relevant types are already re-exported.
+- `webauthn`: Make `KnownPublicKeyCredentialParameters` an enum.
+- `authenticator`: Move `Authenticator`, `Request` and `Response` to the crate root.
+
+### Bugfixes
+
+- `ctap2::get_info`: Fix field order of the `CtapOptions` and `Certifications` structs to produce canonical CBOR
+
+### Other Changes
+
 - Add `EXTENSION_COUNT`, `TRANSPORT_COUNT` and `VERSION_COUNT` constants for the size of the corresponding enums.
+- Add `platform-serde` feature for additional `Serialize` and `Deserialize` implementations not required by authenticators.
+- Add `ctap2::client_pin::MAX_PIN_LENGTH` and `ctap2::config::{DEFAULT_MIN_PIN_LENGTH, MAX_RP_ID_LENGTH, MAX_SUBCOMMAND_PARAMS_CBOR_LEN}` constants.
+- Add `min_pin_length` to `make_credential::{ExtensionsInput, ExtensionsOutput}`.
+- Add fields 0x19 to 0x1F to `ctap2::get_info::Response`.
+- Set `#[repr(u8)]` for `ctap2::Error` and implement `From<ctap2::Error>` for `u8`.
 
 ## [0.5.0] 2026-03-23
 
